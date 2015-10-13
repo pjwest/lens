@@ -16,7 +16,8 @@ var ContainerPanelController = require('./panels/container_panel_controller');
 var ContainerPanelView = require('./panels/container_panel_view');
 var Workflow = require('./workflows/workflow');
 
-var defaultPanels = require('./default_panels');
+//var defaultPanels = require('./default_panels');
+var defaultPanels = require('./omp_panels');
 var defaultWorkflows = require('./default_workflows');
 
 // The Lens Application

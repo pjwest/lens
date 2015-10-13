@@ -125,8 +125,8 @@ PublicationInfoView.Prototype = function() {
     }
 
     var historyEl = this.describePublicationHistory();
-
-    metaData.appendChild(historyEl);
+    //TODO disable document history
+    //metaData.appendChild(historyEl);
 
     this.content.appendChild(metaData);
 

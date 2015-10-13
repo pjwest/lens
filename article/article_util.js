@@ -12,7 +12,15 @@ var MONTH_MAPPING = {
   "11": "November",
   "12": "December"
 };
-
+var WEEKDAY_MAPPING = {
+    "0" : "Sunday",
+    "1" : "Monday",
+    "2" : "Tuesday",
+    "3" : "Wednesday",
+    "4" : "Thursday",
+    "5" : "Friday",
+    "6" : "Saturday"
+};
 var util = {};
 
 util.formatDate = function (pubDate) {
@@ -21,7 +29,7 @@ util.formatDate = function (pubDate) {
     // new Date(year, month [, day [, hours[, minutes[, seconds[, ms]]]]])
     // Note: months are 0-based
     var localDate = new Date(parts[0], parts[1]-1, parts[2]);
-    return localDate.toUTCString().slice(0, 16);
+    return localDate.toUTCString().slice(5, 16);
   } else if (parts.length === 2) {
     var month = parts[1].replace(/^0/, "");
     var year = parts[0];

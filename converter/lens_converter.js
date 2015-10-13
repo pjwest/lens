@@ -41,7 +41,7 @@ NlmToLensConverter.Prototype = function() {
   // mapping of contrib type to human readable names
   // Can be overriden in specialized converter
   this._contribTypeMapping = {
-    "author": "Author",
+    "author": locales.Author,
     "author non-byline": "Author",
     "autahor": "Author",
     "auther": "Author",
@@ -480,7 +480,7 @@ NlmToLensConverter.Prototype = function() {
         "type" : "heading",
         "id" : state.nextId("heading"),
         "level" : 3,
-        "content" : "Copyright & License"
+        "content" : locales.CopyRightAndLicenses
       };
       doc.create(h1);
       nodes.push(h1.id);
@@ -1140,9 +1140,9 @@ NlmToLensConverter.Prototype = function() {
       level: 1,
       content: title ? title.textContent : "Abstract"
     };
-
-    doc.create(heading);
-    nodes.push(heading);
+    //TODO disable abstract
+    //doc.create(heading);
+    //nodes.push(heading);
 
     // with eLife there are abstracts having an object-id.
     // TODO: we should store that in the model instead of dropping it
@@ -1161,12 +1161,15 @@ NlmToLensConverter.Prototype = function() {
 
   this.body = function(state, body) {
     var doc = state.doc;
+     //TODO removed content: "Main Text" and added content:''
     var heading = {
       id: state.nextId("heading"),
       type: "heading",
       level: 1,
-      content: "Main Text"
+      content: ""
     };
+
+
     doc.create(heading);
     var nodes = [heading].concat(this.bodyNodes(state, util.dom.getChildren(body)));
     if (nodes.length > 0) {
@@ -2278,6 +2281,18 @@ NlmToLensConverter.Prototype = function() {
   this.getBaseURL = function(state) {
     // Use xml:base attribute if present
     var baseURL = state.xmlDoc.querySelector("article").getAttribute("xml:base");
+      if (baseURL) {
+          return [baseURL, url].join('');
+      } else {
+          // Use special URL resolving for production articles
+          return [
+              "http://cdn.elifesciences.org/elife-articles/",
+              state.doc.id,
+              "/jpg/",
+              url,
+              ".jpg"
+          ].join('');
+      }
     return baseURL || state.options.baseURL;
   };
 

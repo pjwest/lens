@@ -8,7 +8,7 @@ var Composite = Document.Composite;
 //
 
 var Quote = function(node, doc) {
-    Composite.call(this, node, doc);
+  Composite.call(this, node, doc);
 };
 
 // Type definition
@@ -31,10 +31,12 @@ Quote.type = {
 
 Quote.description = {
   "name": "Quote",
-  "remarks": ["A quote type."],
+  "remarks": [
+    "A quote type.",
+  ],
   "properties": {
     "label": "string",
-    "children": "0..n Paragraph nodes"
+    "children": "0..n Paragraph nodes",
   }
 };
 

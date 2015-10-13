@@ -51,7 +51,8 @@ CoverView.Prototype = function() {
       if (pubDate) {
         var items = [articleUtil.formatDate(pubDate)];
         if (pubInfo.journal && !node.breadcrumbs) {
-          items.push(' in <i>'+pubInfo.journal+'</i>');
+            //TODO disable journal
+          //items.push(' in <i>'+pubInfo.journal+'</i>');
         }
 
         this.content.appendChild($$('.published-on', {
@@ -59,6 +60,7 @@ CoverView.Prototype = function() {
         }));
       }
     }
+
 
     // Title View
     // --------------
