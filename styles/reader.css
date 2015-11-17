@@ -47,7 +47,7 @@ out (on iOS 5.1), or flicker (on iOS 6). */
   float: left;
   overflow: hidden;
   height: 100%;
-  width: 50%;
+  width: 60%;
   border-right: 1px solid #ddd;
 }
 
@@ -138,7 +138,7 @@ out (on iOS 5.1), or flicker (on iOS 6). */
 .article .resources {
   float: right;
   line-height: 25px;
-  width: 50%;
+  width: 40%;
 
   height: 100%;
   padding-left: 50px;
@@ -453,6 +453,17 @@ span.annotation.formula_reference, span.publication_reference {
   padding-left: 3px;
 }
 
+.content-node .footnote_reference {
+    background: rgba(11, 157, 217, 0.075);
+    color: #1B6685;
+    border-bottom: 1px solid rgba(11, 157, 217, 0.4);
+    cursor: pointer;
+    padding-right: 3px;
+    padding-left: 3px;
+    vertical-align: super;
+    font-size: smaller;
+}
+
 .content-node .cross_reference {
   background: rgba(0, 0, 0, 0.05);
   border-bottom: 1px solid rgba(0, 0, 0, 0.25);
@@ -471,13 +482,13 @@ span.annotation.formula_reference, span.publication_reference {
 .content-node .citation_reference:hover { background-color: rgba(11, 157, 217, 0.30); }
 .content-node .contributor_reference:hover { background-color: rgba(0,0,0, 0.05); }
 .content-node .definition_reference:hover { background-color: rgba(0,0,0, 0.1); }
-
+.content-node .footnote_reference:hover { background-color: rgba(11, 157, 217, 0.30); }
 /* Highlighted states */
 .content-node .figure_reference.highlighted { background: rgba(145, 187, 4, 0.7); }
 .content-node .citation_reference.highlighted { background: rgba(11, 157, 217, 0.6); }
 .content-node .contributor_reference.highlighted { background-color: #5c6570; color: white; }
 .content-node .definition_reference.highlighted { background-color: #5c6570; color: white; }
-
+.content-node .footnote_reference.highlighted { background: rgba(11, 157, 217, 0.6); }
 /* Cross Reference */
 .content-node .cross_reference:hover {
   background-color: rgba(0, 0, 0, 0.10);
@@ -623,12 +634,17 @@ as we have a plugin concept for functionality / panels */
   /*color: #fff;*/
 }
 
+/* active citation */
+.article .resources .citations .content-node.highlighted {
+    border-left: 3px solid rgba(11, 157, 217, 1);
+}
+
 .article .resources .figures .content-node.highlighted {
   border-left: 3px solid rgba(145, 187, 4, 1);
 }
 
-/* active citation */
-.article .resources .citations .content-node.highlighted {
+/* active footnote */
+.article .resources .footnotes .content-node.highlighted {
   border-left: 3px solid rgba(11, 157, 217, 1);
 }
 
@@ -641,6 +657,7 @@ as we have a plugin concept for functionality / panels */
 .article .resources .info .content-node.highlighted {
   border-left: 3px solid #5c6570;
 }
+
 
 /* Table of contents */
 

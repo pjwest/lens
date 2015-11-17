@@ -1,0 +1,25 @@
+
+.content-node.speech > .content {
+  padding: 20px;
+}
+
+.document .content-node.speech .content-node.paragraph {
+  /*padding: 0px;*/
+  padding: 10px 40px 10px 40px;
+  border-left: 3px solid #000;
+
+}
+
+.surface.content .content-node.speech {
+
+}
+
+.surface.content .content-node.speech > .content {
+
+}
+
+
+.surface.content .content-node.speech > .content > .label  {
+  font-weight: 600;
+  padding-bottom: 20px;
+}

@@ -19,6 +19,16 @@ var citationsPanel = new ContainerPanel({
   references: ['citation_reference'],
 });
 
+var footnotesPanel = new ContainerPanel({
+    type: 'resource',
+    name: 'footnotes',
+    container: 'footnotes',
+    title: 'Foonotes',
+    icon: 'fa-link',
+    references: ['footnote_reference'],
+});
+
+
 var definitionsPanel = new ContainerPanel({
   type: 'resource',
   name: 'definitions',
@@ -38,5 +48,5 @@ var infoPanel = new ContainerPanel({
 });
 
 module.exports = [
-  figuresPanel, citationsPanel, definitionsPanel, infoPanel
+    citationsPanel, definitionsPanel, figuresPanel, footnotesPanel,  infoPanel
 ];

@@ -115,8 +115,7 @@ Article.fromSnapshot = function(data, options) {
 // Define available views
 // --------
 
-Article.views = ["content", "figures", "citations", "definitions", "info"];
-
+Article.views = ["content", "figures", "footnotes","citations", "definitions", "info"];
 // Register node types
 // --------
 
@@ -359,5 +358,4 @@ Object.defineProperties(Article.prototype, {
     }
   },
 });
-
 module.exports = Article;

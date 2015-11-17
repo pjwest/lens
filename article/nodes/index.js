@@ -20,6 +20,7 @@ module.exports = {
   "contributor_reference": require("./contributor_reference"),
   "figure_reference": require("./figure_reference"),
   "citation_reference": require("./citation_reference"),
+  "footnote_reference": require("./footnote_reference"),
   "definition_reference": require("./definition_reference"),
   "cross_reference": require("./cross_reference"),
   "publication_info": require("./publication_info"),
@@ -48,5 +49,6 @@ module.exports = {
   "codeblock": require("./codeblock"),
   "affiliation": require("./_affiliation"),
   "footnote": require("./footnote"),
-  "quote": require("./quote")
+  "quote": require("./quote"),
+  "speech": require("./speech")
 };

@@ -31,6 +31,7 @@ NlmToLensConverter.Prototype = function() {
     // mapping from xref.refType to node type
     this._refTypeMapping = {
         "bibr": "citation_reference",
+        "fn": "footnote_reference",
         "fig": "figure_reference",
         "table": "figure_reference",
         "supplementary-material": "figure_reference",
@@ -2005,7 +2006,6 @@ NlmToLensConverter.Prototype = function() {
         for (var i = 0; i < fns.length; i++) {
             this.fn(state, fns[i]);
         }
-        console.log(fns);
     };
     this.rererenceTypes = {
         "p": true,
@@ -2038,15 +2038,25 @@ NlmToLensConverter.Prototype = function() {
         footnoteNode = {
             "id": id,
             "source_id": fn.getAttribute("id"),
-            "type": footnote,
-            "title": "",
-            "content": [],
+            "type": "citation",
+            "title": "N/A",
+            "label": "",
+            "authors": [],
+            "doi": "",
+            "source": "",
+            "volume": "",
+            "fpage": "",
+            "lpage": "",
+            "citation_urls": []
         }
 
         var footnoteContent = fn.querySelectorAll("p");
         for (i = 0; i < footnoteContent.length; i++) {
-            footnoteNode.content.push(footnoteContent[i]);
+            footnoteNode.title=footnoteContent[i].textContent;
         }
+        doc.create(footnoteNode);
+        doc.show("footnotes", id);
+        return footnoteNode;
     };
 
   // Citations

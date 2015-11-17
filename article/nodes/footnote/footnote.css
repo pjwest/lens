@@ -1,12 +1,31 @@
-.surface .content-node.footnote > .content {
-  display: inline;
+/*
+Citations 
+--------------------------------------- */
+
+.lens-article .resources .content-node.footnote .resource-header .name {
+  font-weight: normal;
+  font-size: 12px;
+  color: #888;
 }
 
-.surface .content-node.footnote > .content > .content-node {
-  display: inline;
+.lens-article .content-node.footnote .content .title {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 20px;
 }
 
-.surface .content-node.footnote > .content > .content-node > .content {
-  display: inline;
+.lens-article .content-node.footnote .content .authors {
+  font-size: 14px;
 }
 
+.lens-article .content-node.footnote .content .source {
+  /*color: #777;*/
+}
+
+.lens-article .content-node.footnote .content .footnote-urls {
+  padding-top: 20px;
+}
+
+.lens-article .content-node.footnote .content .footnote-urls .url {
+  padding-right: 20px;
+}

@@ -1,19 +1,26 @@
-"use strict";
-
+var _ = require('underscore');
 var Document = require('../../../substance/document');
-var DocumentNode = Document.Node;
-var Paragraph = require('../paragraph').Model;
 
+// Lens.Citation
+// -----------------
+//
 
-var Footnote = function(node, document) {
-  Paragraph.call(this, node, document);
+var Citation = function(node, doc) {
+  Document.Node.call(this, node, doc);
 };
 
-Footnote.type = {
-  "id": "footnote",
-  "parent": "paragraph",
+// Type definition
+// -----------------
+//
+
+Citation.type = {
+  "id": "article_citation", // type name
+  "parent": "content",
   "properties": {
-    "label": "string"
+    "source_id": "string",
+    "title": "string",
+    "label": "string",
+
   }
 };
 
@@ -21,39 +28,81 @@ Footnote.type = {
 // -----------------
 //
 
-Footnote.description = {
-  "name": "Footnote",
+Citation.description = {
+  "name": "Citation",
   "remarks": [
-    "A Footnote is basically a Paragraph with a label."
+    "A journal citation.",
+    "This element can be used to describe all kinds of citations."
   ],
   "properties": {
-    "label": "A string used as label",
+    "title": "The article's title",
+    "label": "Optional label (could be a number for instance)",
+    "doi": "DOI reference",
+    "source": "Usually the journal name",
+    "volume": "Issue number",
+    "citation_type": "Citation Type",
+    "publisher_name": "Publisher Name",
+    "publisher_location": "Publisher Location",
+    "fpage": "First page",
+    "lpage": "Last page",
+    "year": "The year of publication",
+    "comment": "Author comment.",
+    "citation_urls": "A list of links for accessing the article on the web"
   }
 };
 
-// Example
-// -------
+
+
+// Example Citation
+// -----------------
 //
 
-Footnote.example = {
-  "type": "footnote",
-  "id": "footnote_1",
-  "label": "a",
-  "children ": [
-    "text_1",
-    "image_1",
-    "text_2"
+Citation.example = {
+  "id": "article_nature08160",
+  "type": "article_citation",
+  "label": "5",
+  "title": "The genome of the blood fluke Schistosoma mansoni",
+  "authors": [
+    "M Berriman",
+    "BJ Haas",
+    "PT LoVerde"
+  ],
+  "citation_type": "Journal Article",
+  "doi": "http://dx.doi.org/10.1038/nature08160",
+  "source": "Nature",
+  "volume": "460",
+  "fpage": "352",
+  "lpage": "8",
+  "year": "1984",
+  "comment": "This is a comment.",
+  "citation_urls": [
+    {
+      "name": "PubMed",
+      "url": "http://www.ncbi.nlm.nih.gov/pubmed/19606141"
+    }
   ]
 };
 
-Footnote.Prototype = function() {
 
+Citation.Prototype = function() {
+
+  // Returns the citation URLs if available
+  // Falls back to the DOI url
+  // Always returns an array;
+  this.urls = function() {
+    return this.properties.citation_urls.length > 0 ? this.properties.citation_urls
+                                                    : [this.properties.doi];
+  };
+
+  this.getHeader = function() {
+    return _.compact([this.properties.label, this.properties.citation_type || locales.Reference]).join(' - ');
+  };
 };
 
-Footnote.Prototype.prototype = Paragraph.prototype;
-Footnote.prototype = new Footnote.Prototype();
-Footnote.prototype.constructor = Footnote;
+Citation.Prototype.prototype = Document.Node.prototype;
+Citation.prototype = new Citation.Prototype();
+Citation.prototype.constructor = Citation;
 
-DocumentNode.defineProperties(Footnote);
+Document.Node.defineProperties(Citation);
 
-module.exports = Footnote;
+module.exports = Citation;
