@@ -1,11 +1,11 @@
 var _ = require('underscore');
 var Document = require('../../../substance/document');
 
-// Lens.Citation
+// Lens.Footnote
 // -----------------
 //
 
-var Citation = function(node, doc) {
+var Footnote = function(node, doc) {
   Document.Node.call(this, node, doc);
 };
 
@@ -13,14 +13,26 @@ var Citation = function(node, doc) {
 // -----------------
 //
 
-Citation.type = {
-  "id": "article_citation", // type name
+Footnote.type = {
+  "id": "article_footnote", // type name
   "parent": "content",
   "properties": {
     "source_id": "string",
     "title": "string",
     "label": "string",
-
+    "authors": ["array", "string"],
+    "doi": "string",
+    "source": "string",
+    "volume": "string",
+    "citation_type": "string",
+    "publisher_name": "string",
+    "publisher_location": "string",
+    "fpage": "string",
+    "lpage": "string",
+    "year": "string",
+    "comment": "string",
+    "citation_urls": ["array", "object"],
+    "source_formats": ["array", "object"]
   }
 };
 
@@ -28,8 +40,8 @@ Citation.type = {
 // -----------------
 //
 
-Citation.description = {
-  "name": "Citation",
+Footnote.description = {
+  "name": "Footnote",
   "remarks": [
     "A journal citation.",
     "This element can be used to describe all kinds of citations."
@@ -40,7 +52,7 @@ Citation.description = {
     "doi": "DOI reference",
     "source": "Usually the journal name",
     "volume": "Issue number",
-    "citation_type": "Citation Type",
+    "citation_type": "Footnote Type",
     "publisher_name": "Publisher Name",
     "publisher_location": "Publisher Location",
     "fpage": "First page",
@@ -53,11 +65,11 @@ Citation.description = {
 
 
 
-// Example Citation
+// Example Footnote
 // -----------------
 //
 
-Citation.example = {
+Footnote.example = {
   "id": "article_nature08160",
   "type": "article_citation",
   "label": "5",
@@ -84,7 +96,7 @@ Citation.example = {
 };
 
 
-Citation.Prototype = function() {
+Footnote.Prototype = function() {
 
   // Returns the citation URLs if available
   // Falls back to the DOI url
@@ -99,10 +111,10 @@ Citation.Prototype = function() {
   };
 };
 
-Citation.Prototype.prototype = Document.Node.prototype;
-Citation.prototype = new Citation.Prototype();
-Citation.prototype.constructor = Citation;
+Footnote.Prototype.prototype = Document.Node.prototype;
+Footnote.prototype = new Footnote.Prototype();
+Footnote.prototype.constructor = Footnote;
 
-Document.Node.defineProperties(Citation);
+Document.Node.defineProperties(Footnote);
 
-module.exports = Citation;
+module.exports = Footnote;

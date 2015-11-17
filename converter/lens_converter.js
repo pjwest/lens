@@ -2038,7 +2038,7 @@ NlmToLensConverter.Prototype = function() {
         footnoteNode = {
             "id": id,
             "source_id": fn.getAttribute("id"),
-            "type": "citation",
+            "type": "footnote",
             "title": "N/A",
             "label": "",
             "authors": [],

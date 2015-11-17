@@ -19,7 +19,6 @@ var Scrollbar = function(surface) {
   this.$nodes = this.surface.$nodes;
 
   this.$el.addClass('surface-scrollbar');
-    console.log(surface);
   this.$el.addClass(surface.docCtrl.getContainer().id);
 
   this.overlays = [];

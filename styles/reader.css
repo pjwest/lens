@@ -272,6 +272,8 @@ out (on iOS 5.1), or flicker (on iOS 6). */
   line-height: 50px;
   color: rgba(0,0,0, 0.4);
   padding: 0px 20px;
+
+
 }
 
 .article .resources .content-node .resource-header .toggle i {
@@ -287,6 +289,9 @@ out (on iOS 5.1), or flicker (on iOS 6). */
   color: rgba(11, 157, 217, 1);
 }
 
+article  .resources .footnotes .content-node.highlighted .resource-header .toggle.toggle-res {
+    color: rgba(11, 157, 217, 1);
+}
 .article .resources .info .content-node.highlighted .resource-header .toggle.toggle-res {
   color: #5c6570;
 }
@@ -631,12 +636,15 @@ as we have a plugin concept for functionality / panels */
 
 /* Active resource */
 .article .resources .content-node.highlighted .resource-header .name {
-  /*color: #fff;*/
+  color: #fff;
 }
 
 /* active citation */
 .article .resources .citations .content-node.highlighted {
-    border-left: 3px solid rgba(11, 157, 217, 1);
+    border-left: 1px solid rgba(11, 157, 217, 1);
+    border-right: 1px solid rgba(11, 157, 217, 1);
+    border-top: 1px solid rgba(11, 157, 217, 1);
+    border-bottom: 1px solid rgba(11, 157, 217, 1);
 }
 
 .article .resources .figures .content-node.highlighted {
@@ -645,7 +653,11 @@ as we have a plugin concept for functionality / panels */
 
 /* active footnote */
 .article .resources .footnotes .content-node.highlighted {
-  border-left: 3px solid rgba(11, 157, 217, 1);
+  border-left: 1px solid rgba(11, 157, 217, 1);
+  border-right: 1px solid rgba(11, 157, 217, 1);
+  border-top: 1px solid rgba(11, 157, 217, 1);
+  border-bottom: 1px solid rgba(11, 157, 217, 1);
+
 }
 
 /* active definition */
@@ -655,7 +667,10 @@ as we have a plugin concept for functionality / panels */
 
 /* active contributor */
 .article .resources .info .content-node.highlighted {
-  border-left: 3px solid #5c6570;
+  border-left: 1px solid #5c6570;
+  border-right: 1px solid #5c6570;
+  border-top: 1px solid #5c6570;
+  border-bottom: 1px solid #5c6570;
 }
 
 
@@ -775,13 +790,17 @@ TOC
 .article .content .surface-scrollbar .highlighted.figure_reference
  { background-color: rgba(145, 187, 4, 1); }
 
-.article .resources .citations .surface-scrollbar .highlighted,
-.article .content .surface-scrollbar .highlighted.citation_reference
+.article .resources .footnotes .surface-scrollbar .highlighted,
+.article .content .surface-scrollbar .highlighted.footnote_reference
  { background-color: rgba(11, 157, 217, 1); }
 
 .article .resources .definitions .surface-scrollbar .highlighted,
 .article .content .surface-scrollbar .highlighted.definition_reference
 { background-color: #5c6570; }
+
+.article .resources .citations .surface-scrollbar .highlighted,
+.article .content .surface-scrollbar .highlighted.citation_reference
+{ background-color: rgba(11, 157, 217, 1);}
 
 
 /* new FOCUS handles */

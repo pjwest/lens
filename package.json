@@ -56,9 +56,9 @@
   },
   "_id": "lens@2.0.0-beta5",
   "dist": {
-    "shasum": "121be53969d7fc415657e1cb76a86c9c7a83673a"
+    "shasum": "44d19397205cd286669b2a09d5cf3065a3680fd0"
   },
-  "_resolved": "git://github.com/withanage/lens.git#cf8dd32328d074dc91f3951e8f81785c8d3b62a1",
+  "_resolved": "git://github.com/withanage/lens.git#e0cb108c11a6f6c492a6320d5323e318d1eaac8c",
   "_from": "git://github.com/withanage/lens.git",
   "_fromGithub": true
 }
