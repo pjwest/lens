@@ -1340,12 +1340,23 @@ NlmToLensConverter.Prototype = function() {
         "speeches":[]
     }
     var speech;
+    var xref, xref_text;
     var speakers = speech.querySelectorAll("speaker");
     var speeches = speech.querySelectorAll("p");
       for (i = 0; i < speakers.length; i++) {
-          speechNode.speeches.push({"speaker": speakers[i].textContent,"text":speeches[i].textContent});
-
+          xref_text ='';
+          for (var j =0 ; j < speeches[i].childNodes.length ;  j++) {
+            xref= speeches[i].childNodes[j];
+            if (xref.tagName=='xref') {
+                xref_text += xref.outerHTML.replace(/xref/g,'a').replace('ref-type','class').replace('"fn"','"annotation footnote_reference resource-reference"').replace('rid','data-id').replace(/data-id="(.*)"/g,'data-id="footnote_reference_'+String(xref.innerHTML)+'"');
+            }
+            else {
+                xref_text +=  speeches[i].childNodes[j].textContent;
+            }
+          }
+          speechNode.speeches.push({"speaker": speakers[i].textContent,"text":xref_text});
       }
+
     doc.create(speechNode);
     return speechNode;
   };
