@@ -23,7 +23,7 @@ var footnotesPanel = new ContainerPanel({
     type: 'resource',
     name: 'footnotes',
     container: 'footnotes',
-    title: 'Foonotes',
+    title: 'Footnotes',
     icon: 'fa-link',
     references: ['footnote_reference'],
 });
