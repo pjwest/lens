@@ -721,30 +721,6 @@ TOC
   font-size: 14px;
 }
 
-.resource-view.toc .heading-ref.level-6 {
-  padding-left: 100px;
-  font-size: 14px;
-}
-
-.resource-view.toc .heading-ref.level-7 {
-  padding-left: 120px;
-  font-size: 14px;
-}
-
-.resource-view.toc .heading-ref.level-8 {
-  padding-left: 140px;
-  font-size: 14px;
-}
-
-.resource-view.toc .heading-ref.level-9 {
-  padding-left: 160px;
-  font-size: 14px;
-}
-
-.resource-view.toc .heading-ref.level-10 {
-  padding-left: 180px;
-  font-size: 14px;
-}
 .resource-view.toc .heading-ref:hover {
   color: rgba(0,0,0,1);
 }
