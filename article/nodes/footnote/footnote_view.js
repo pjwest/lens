@@ -39,9 +39,6 @@ CitationView.Prototype = function() {
           d.innerHTML = title.childNodes[i].innerHTML;
           title.replaceChild(d, title.childNodes[i]);
       }
-      else {
-        console.log('not-set', title.childNodes[i]);
-      }
     }
 
 
