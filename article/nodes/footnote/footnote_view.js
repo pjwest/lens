@@ -30,13 +30,17 @@ CitationView.Prototype = function() {
     // Add title
     // -------
     //
+    var d;
     var title = node.properties.title;
-    var d = document.createElement('span');
-    d.className ="citation-italic";
     for (var i = 0; i <title.childNodes.length; i++) {
       if (title.childNodes[i].tagName == 'italic') {
-      d.innerHTML = title.childNodes[i].innerHTML;
-      title.replaceChild(d, title.childNodes[i]);
+          d = document.createElement('span');
+          d.className ="citation-italic";
+          d.innerHTML = title.childNodes[i].innerHTML;
+          title.replaceChild(d, title.childNodes[i]);
+      }
+      else {
+        console.log('not-set', title.childNodes[i]);
       }
     }
 
