@@ -29,10 +29,21 @@ CitationView.Prototype = function() {
 
     // Add title
     // -------
+    //
+    var title = node.properties.title;
+    var d = document.createElement('span');
+    d.className ="citation-italic";
+    for (var i = 0; i <title.childNodes.length; i++) {
+      if (title.childNodes[i].tagName == 'italic') {
+      d.innerHTML = title.childNodes[i].innerHTML;
+      title.replaceChild(d, title.childNodes[i]);
+      }
+    }
 
-    var titleView = this.createTextPropertyView([node.id, 'title'], { classes: 'title' });
-    frag.appendChild(titleView.render().el);
 
+
+
+    frag.appendChild(title);
     // Add Authors
     // -------
     frag.appendChild($$('.authors', {

@@ -195,7 +195,9 @@ out (on iOS 5.1), or flicker (on iOS 6). */
 .article .resources .nodes > .content-node > .content {
   border-top: none;
 }
-
+.article .resources .nodes > .content-node > .content .citation-italic{
+  font-style: italic;
+}
 /* Clickable header */
 .article .resources .content-node .resource-header {
   padding-top: 15px;

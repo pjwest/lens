@@ -2063,7 +2063,7 @@ NlmToLensConverter.Prototype = function() {
 
         var footnoteContent = fn.querySelectorAll("p");
         for (i = 0; i < footnoteContent.length; i++) {
-            footnoteNode.title=footnoteContent[i].textContent;
+            footnoteNode.title=footnoteContent[i];
         }
         doc.create(footnoteNode);
         doc.show("footnotes", id);
