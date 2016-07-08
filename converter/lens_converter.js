@@ -1003,8 +1003,8 @@ NlmToLensConverter.Prototype = function() {
         // <pub-date> Publication Date, zero or more
         var pubDates = articleMeta.querySelectorAll("pub-date");
         this.pubDates(state, pubDates);
-
-        this.abstracts(state, articleMeta);
+        //TODO removed abstract
+        //this.abstracts(state, articleMeta);
 
         // Not supported yet:
         // <trans-abstract> Translated Abstract, zero or more
