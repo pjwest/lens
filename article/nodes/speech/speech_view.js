@@ -27,7 +27,7 @@ SpeechView.Prototype = function () {
             tr.appendChild(td);
             td = document.createElement('td');
             td.setAttribute('class', 'speech');
-            td.innerText = speeches[i].text;
+            td.innerHTML = speeches[i].text;
             tr.appendChild(td);
             htmlTable.appendChild(tr);
         }
