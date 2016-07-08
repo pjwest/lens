@@ -5,44 +5,38 @@ var CompositeView = require("../composite").View;
 
 var $$ = require("../../../substance/application").$$;
 
-// Lens.Speech.View
-// ==========================================================================
 
-var SpeechView = function(node, viewFactory) {
-  CompositeView.call(this, node, viewFactory);
+var SpeechView = function (node, viewFactory) {
+    CompositeView.call(this, node, viewFactory);
 };
 
-SpeechView.Prototype = function() {
+SpeechView.Prototype = function () {
 
 
-  this.render = function() {
-    NodeView.prototype.render.call(this);
-    var speeches = this.node.speeches;
-    var htmlTable="<table>";
-    var i;
-      for (i = 0; i < speeches.length; i++) {
-          htmlTable +="<tr>";
-          htmlTable += "<td><b>"+speeches[i].speaker+"</b></td>";
-          htmlTable += "<td>"+speeches[i].text+"</td>";
+    this.render = function () {
+        NodeView.prototype.render.call(this);
+        var speeches = this.node.speeches;
+        var htmlTable = document.createElement('table');
+        htmlTable.setAttribute('class', 'speeches');
+        var i, tr, td, speaker;
+        for (i = 0; i < speeches.length; i++) {
+            tr = document.createElement('tr');
+            td = document.createElement('td');
+            td.setAttribute('class', 'speaker');
+            td.innerText = speeches[i].speaker;
+            tr.appendChild(td);
+            td = document.createElement('td');
+            td.setAttribute('class', 'speech');
+            td.innerText = speeches[i].text;
+            tr.appendChild(td);
+            htmlTable.appendChild(tr);
+        }
+        this.content.appendChild(htmlTable);
+        this.renderChildren();
 
-          htmlTable +="</tr>";
-      }
-      htmlTable+="</table>";
-
-    if (this.node.speeches) {
-      var speechTable = $$('.speeches', {
-          html: htmlTable
-
-      });
-
-      this.content.appendChild(speechTable);
+        this.el.appendChild(this.content);
+        return this;
     };
-
-    this.renderChildren();
-
-    this.el.appendChild(this.content);
-    return this;
-  };
 };
 
 SpeechView.Prototype.prototype = CompositeView.prototype;

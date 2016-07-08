@@ -32,9 +32,6 @@ TOCView.Prototype = function() {
     var linkUrl = '../../../../'+application+'/catalog/book/'+submission_id;
     backLink.setAttribute('href',linkUrl);
     backLink.textContent =locales.Back;
-    //var linkSymbol = document.createElement('i');
-    //linkSymbol.setAttribute('class','fa fa-link');
-    //backLink.appendChild(linkSymbol);
     backLinkContainer.appendChild(backLink);
     this.el.appendChild(backLinkContainer);
 
