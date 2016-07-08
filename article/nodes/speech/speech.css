@@ -1,6 +1,6 @@
 
 .content-node.speech > .content {
-  padding: 20px;
+  padding: 2px;
 }
 
 .document .content-node.speech .content-node.paragraph {
@@ -21,5 +21,5 @@
 
 .surface.content .content-node.speech > .content > .label  {
   font-weight: 600;
-  padding-bottom: 20px;
+  padding-bottom: 10px;
 }

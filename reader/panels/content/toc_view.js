@@ -25,6 +25,19 @@ TOCView.Prototype = function() {
     var lastLevel = -1;
     var tocNodes = this.doc.getTocNodes();
     // don't render if only 2 sections
+
+    var backLinkContainer = document.createElement('div');
+    backLinkContainer.setAttribute('class','navigation');
+    var backLink = document.createElement('a');
+    var linkUrl = '../../../../'+application+'/catalog/book/'+submission_id;
+    backLink.setAttribute('href',linkUrl);
+    backLink.textContent =locales.Back;
+    //var linkSymbol = document.createElement('i');
+    //linkSymbol.setAttribute('class','fa fa-link');
+    //backLink.appendChild(linkSymbol);
+    backLinkContainer.appendChild(backLink);
+    this.el.appendChild(backLinkContainer);
+
     // TODO: this should be decided by the toc panel
     if (tocNodes.length < 2) return this;
 
@@ -45,6 +58,7 @@ TOCView.Prototype = function() {
         $el.addClass('level-' + level);
         $el.click(_.bind(this.onClick, this, node.id));
         this.el.appendChild(el);
+
       }
     }, this);
 
