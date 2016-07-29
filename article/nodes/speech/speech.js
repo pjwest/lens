@@ -21,8 +21,8 @@ Speech.type = {
   "properties": {
     "source_id": "string",
     "label": "string",
-    "children":["arrary","string"],
-    "speeches":["object"]
+    "children": ["array", "paragraph"],
+    "speaker":["content"]
 
   }
 };

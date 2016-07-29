@@ -157,7 +157,6 @@ NlmToLensConverter.Prototype = function() {
 
         // A deliverable state which makes this importer stateless
         var state = this.createState(xmlDoc, doc);
-
         // Note: all other methods are called corresponding
         return this.document(state, xmlDoc);
     };
@@ -894,7 +893,7 @@ NlmToLensConverter.Prototype = function() {
                 } else {
                     // NOTE: I've made this silent because it frequently occurs that no targetnode is
                     // available (e.g. for inline formulas)
-                    // console.log("Could not lookup targetNode for annotation", anno);
+                     console.log("Could not lookup targetNode for annotation", anno);
                 }
             }
             state.doc.create(state.annotations[i]);
@@ -1325,56 +1324,36 @@ NlmToLensConverter.Prototype = function() {
 
       return speakerName;
   };
-
-  this.speechText = function (state, speech) {
-      var i;
-    var doc = state.doc;
-    var childNodes = this.bodyNodes(state, util.dom.getChildren(speech));
-    var speechId = state.nextId("speech");
-    var speechNode = {
-        "type": "speech",
-        "id": speechId,
-        "source_id": speech.getAttribute("id"),
-        "label": "1",
-        "children": [],
-        "speeches":[]
-    }
-    var speech;
-    var xref, xref_text;
-    var speakers = speech.querySelectorAll("speaker");
-    var speeches = speech.querySelectorAll("p");
-      for (i = 0; i < speakers.length; i++) {
-          xref_text ='';
-          for (var j =0 ; j < speeches[i].childNodes.length ;  j++) {
-            xref= speeches[i].childNodes[j];
-            if (xref.tagName=='xref') {
-                xref_text += xref.outerHTML.replace(/xref/g,'a').replace('ref-type','class').replace('"fn"','"annotation footnote_reference resource-reference"').replace('rid','data-id').replace(/data-id="(.*)"/g,'data-id="footnote_reference_'+String(xref.innerHTML)+'"');
-            }
-            else {
-                xref_text +=  speeches[i].childNodes[j].textContent;
-            }
-          }
-          speechNode.speeches.push({"speaker": speakers[i].textContent,"text":xref_text});
-      }
-
-    doc.create(speechNode);
-    return speechNode;
-  };
-
-  this.quoteText = function (state, quote) {
-    var doc = state.doc;
-    // Assuming that there are no nested <disp-quote> elements
-    var childNodes = this.bodyNodes(state, util.dom.getChildren(quote));
-    var quoteId = state.nextId("quote");
-    var quoteNode = {
-      "type": "quote",
-      "id": quoteId,
-      "source_id": quote.getAttribute("id"),
-      "label": "",
-      "children": _.pluck(childNodes, 'id')
+    this.quoteText = function (state, quote) {
+        var doc = state.doc;
+        // Assuming that there are no nested <disp-quote> elements
+        var childNodes = this.bodyNodes(state, util.dom.getChildren(quote));
+        var quoteId = state.nextId("quote");
+        var quoteNode = {
+            "type": "quote",
+            "id": quoteId,
+            "source_id": quote.getAttribute("id"),
+            "label": "",
+            "children": _.pluck(childNodes, 'id')
+        };
+        doc.create(quoteNode);
+        return quoteNode;
     };
-    doc.create(quoteNode);
-    return quoteNode;
+
+    this.speechText = function (state, speech) {
+        var doc = state.doc;
+        var childNodes = this.bodyNodes(state, util.dom.getChildren(speech));
+        var speechId = state.nextId("speech");
+        var speechNode = {
+            "type": "speech",
+            "id": speechId,
+            "source_id": speech.getAttribute("id"),
+            "label": "",
+            "speaker":speech.querySelectorAll("speaker"),
+            "children": _.pluck(childNodes, 'id')
+        };
+        doc.create(speechNode);
+        return speechNode;
     };
 
     this.datasets = function(state, datasets) {

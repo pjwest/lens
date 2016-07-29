@@ -7,9 +7,9 @@ var CrossReference = function(node, doc) {
 
 CrossReference.type = {
   id: "cross_reference",
-  parent: "annotation",
+  parent: "resource_reference",
   properties: {
-    "target": "node"
+    "target": "toc"
   }
 };
 

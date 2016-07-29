@@ -12,27 +12,36 @@ var SpeechView = function (node, viewFactory) {
 
 SpeechView.Prototype = function () {
 
-
     this.render = function () {
         NodeView.prototype.render.call(this);
-        var speeches = this.node.speeches;
-        var htmlTable = document.createElement('table');
+        var i, htmlTable, tr, td, speaker;
+
+        htmlTable = document.createElement('table');
         htmlTable.setAttribute('class', 'speeches');
-        var i, tr, td, speaker;
-        for (i = 0; i < speeches.length; i++) {
-            tr = document.createElement('tr');
+
+        tr = document.createElement('tr');
+
+        var speakers = this.node.speaker;
+        for (i = 0; i < speakers.length; i++) {
             td = document.createElement('td');
             td.setAttribute('class', 'speaker');
-            td.innerText = speeches[i].speaker;
-            tr.appendChild(td);
-            td = document.createElement('td');
-            td.setAttribute('class', 'speech');
-            td.innerHTML = speeches[i].text;
-            tr.appendChild(td);
-            htmlTable.appendChild(tr);
+            td.innerText = speakers[i].textContent;
         }
+
+        tr.appendChild(td)
+        var text = this.node.getChildrenIds();
+        for (var i = 0; i < text.length; i++) {
+            var td = document.createElement('td');
+            td.setAttribute('class', 'speech');
+            var childView = this.createChildView(text[i]);
+            var childViewEl = childView.render().el;
+            td.appendChild(childViewEl);
+            tr.appendChild(td);
+
+        }
+
+        htmlTable.appendChild(tr);
         this.content.appendChild(htmlTable);
-        this.renderChildren();
 
         this.el.appendChild(this.content);
         return this;
