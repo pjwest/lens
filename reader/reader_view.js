@@ -218,7 +218,6 @@ ReaderView.Prototype = function() {
   this.updateState = function() {
     var self = this;
     var state = this.readerCtrl.state;
-
     var handled;
 
     // EXPERIMENTAL: introducing workflows to handle state updates
@@ -294,6 +293,7 @@ ReaderView.Prototype = function() {
           var refs = this.resources.get(state.focussedNode);
           _.each(refs, function(ref) {
             this.contentView.addHighlight(ref.id, "highlighted ");
+            this.contentView.scrollTo(ref.target);
           }, this);
           // TODO: Jumps to wrong position esp. for figures, because content like images has not completed loading
           // at that stage. WE should make corrections afterwards
