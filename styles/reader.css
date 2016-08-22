@@ -390,6 +390,10 @@ span.annotation.formula_reference, span.publication_reference {
   font-size: inherit;
 }
 
+.article span.strike {
+  text-decoration:line-through;
+}
+
 .article span.strong, .article strong {
   font-weight: bold;
 }

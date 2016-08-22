@@ -20,6 +20,7 @@ NlmToLensConverter.Prototype = function() {
         "sup": "superscript",
         "sc": "custom_annotation",
         "underline": "underline",
+        "strike":"strike",
         "ext-link": "link",
         "xref": "",
         "email": "link",
