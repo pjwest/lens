@@ -937,7 +937,7 @@ NlmToLensConverter.Prototype = function() {
         this.extractCitations(state, article);
         // Same for the citations, also globally
 
-        this.extractFootnotes(state, article);
+
 
 
         // Make up a cover node
@@ -957,6 +957,8 @@ NlmToLensConverter.Prototype = function() {
         this.extractFigures(state, article);
 
         this.enhanceArticle(state, article);
+        // Order is important,   At this porint of time all the  annotations are parsed.
+        this.extractFootnotes(state, article);
     };
 
     this.extractDefinitions = function (state /*, article*/) {
@@ -2007,7 +2009,7 @@ NlmToLensConverter.Prototype = function() {
         for (var i = 0; i < children.length; i++) {
             var child = children[i];
             var type = util.dom.getNodeType(child);
-
+            var nodes =this.paragraph(state,fn,child);
             if (this.rererenceTypes[type]) {
                 this.footnote(state, fn, child);
             } else if (type === "label") {
@@ -2030,7 +2032,7 @@ NlmToLensConverter.Prototype = function() {
             "id": id,
             "source_id": fn.getAttribute("id"),
             "type": "footnote",
-            "title": "N/A",
+            "text": "N/A",
             "label": "",
             "authors": [],
             "doi": "",
@@ -2041,10 +2043,19 @@ NlmToLensConverter.Prototype = function() {
             "citation_urls": []
         }
 
-        var footnoteContent = fn.querySelectorAll("p");
-        for (i = 0; i < footnoteContent.length; i++) {
-            footnoteNode.title=footnoteContent[i];
+        var blocks = this.segmentParagraphElements(footnote);
+
+        for (i = 0; i < blocks.length; i++) {
+            var block = blocks[i];
+            for (j = 0; j < block.nodes.length; j++) {
+                if (block.nodes[j].tagName == 'xref') {
+                    var sourceId = block.nodes[j].getAttribute("rid");
+                    var targetNode = state.doc.getNodeBySourceId(sourceId);
+                    block.nodes[j].target = targetNode.properties.id;
+                }
+            }
         }
+        footnoteNode.text = blocks;
         doc.create(footnoteNode);
         doc.show("footnotes", id);
         return footnoteNode;
@@ -2270,6 +2281,7 @@ NlmToLensConverter.Prototype = function() {
   this.addAnnotationDataForXref = function(state, anno, el) {
     var refType = el.getAttribute("ref-type");
     var sourceId = el.getAttribute("rid");
+
     // Default reference is a cross_reference
     anno.type = this._refTypeMapping[refType] || "cross_reference";
     if (sourceId) anno.target = sourceId;

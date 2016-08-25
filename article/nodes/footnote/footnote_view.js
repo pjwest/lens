@@ -9,138 +9,151 @@ var ResourceView = require('../../resource_view');
 // ==========================================================================
 
 
-var CitationView = function(node, viewFactory, options) {
-  NodeView.apply(this, arguments);
+var CitationView = function (node, viewFactory, options) {
+    NodeView.apply(this, arguments);
 
-  // Mix-in
-  ResourceView.call(this, options);
+    // Mix-in
+    ResourceView.call(this, options);
 
 };
 
 
-CitationView.Prototype = function() {
+CitationView.Prototype = function () {
 
-  // Mix-in
-  _.extend(this, ResourceView.prototype);
+    // Mix-in
+    _.extend(this, ResourceView.prototype);
 
-  this.renderBody = function() {
-    var frag = document.createDocumentFragment();
-    var node = this.node;
-
-    // Add title
-    // -------
-    //
-    var d;
-    var title = node.properties.title;
-    for (var i = 0; i <title.childNodes.length; i++) {
-      if (title.childNodes[i].tagName == 'italic') {
-          d = document.createElement('span');
-          d.className ="citation-italic";
-          d.innerHTML = title.childNodes[i].innerHTML;
-          title.replaceChild(d, title.childNodes[i]);
-      }
-    }
+    this.renderBody = function () {
+        var frag = document.createDocumentFragment();
+        var node = this.node;
 
 
+        // Add text
+        // -------
+        //
+        var italic, xref;
+
+        var text = node.properties.text[0].nodes;
+
+        if (text !== undefined) {
+            for (var i = 0; i < text.length; i++) {
+                if (text[i].tagName == 'italic') {
+                    italic = document.createElement('span');
+                    italic.className = "citation-italic";
+                    italic.innerHTML = text[i].innerHTML;
+                    frag.appendChild(italic);
+                }
+                if (text[i].tagName == 'xref') {
+                    xref = document.createElement("a");
+                    xref.className = "annotation cross_reference cross-reference";
+                    xref.setAttribute("data-id", text[i].target);
+                    xref.innerHTML = text[i].innerHTML;
+                    frag.appendChild(xref);
+
+                }
+                else {
+                    frag.appendChild(text[i]);
+                }
+            }
+        }
 
 
-    frag.appendChild(title);
-    // Add Authors
-    // -------
-    frag.appendChild($$('.authors', {
-      html: node.authors.join(', ')
-    }));
-
-    // Add Source
-    // -------
-
-    var sourceText = "",
-        sourceFrag = "",
-        pagesFrag = "",
-        publisherFrag = "";
-
-    // Hack for handling unstructured citation types and render prettier
-    if (node.source && node.volume === '') {
-      sourceFrag = node.source;
-    } else if (node.source && node.volume) {
-      sourceFrag = [node.source, node.volume].join(', ');
-    }
-
-    if (node.fpage && node.lpage) {
-      pagesFrag = [node.fpage, node.lpage].join('-');
-    }
-
-    // Publisher Frag
-
-    var elems = [];
-
-    if (node.publisher_name && node.publisher_location) {
-      elems.push(node.publisher_name);
-      elems.push(node.publisher_location);
-    }
-
-    if (node.year) {
-      elems.push(node.year);
-    }
-
-    publisherFrag = elems.join(', ');
-
-    // Put them together
-    sourceText = sourceFrag;
-
-    // Add separator only if there's content already, and more to display
-    if (sourceFrag && (pagesFrag || publisherFrag)) {
-      sourceText += ": ";
-    }
-
-    if (pagesFrag && publisherFrag) {
-      sourceText += [pagesFrag, publisherFrag].join(", ");
-    } else {
-      // One of them without a separator char
-      sourceText += pagesFrag;
-      sourceText += publisherFrag;
-    }
-
-    frag.appendChild($$('.source', {
-      html: sourceText
-    }));
-
-    if (node.comment) {
-      var commentView = this.createTextView({ path: [node.id, 'comment'], classes: 'comment' });
-      frag.appendChild(commentView.render().el);
-    }
-
-    // Add DOI (if available)
-    // -------
-
-    if (node.doi) {
-      frag.appendChild($$('.doi', {
-        children: [
-          $$('b', {text: "DOI: "}),
-          $$('a', {
-            href: node.doi,
-            target: "_new",
-            text: node.doi
-          })
-        ]
-      }));
-    }
-
-    if (node.citation_urls.length > 0) {
-      var citationUrlsEl = $$('.citation-urls');
-
-      _.each(node.citation_urls, function(url) {
-        citationUrlsEl.appendChild($$('a.url', {
-          href: url.url,
-          text: url.name,
-          target: "_blank"
+        // Add Authors
+        // -------
+        frag.appendChild($$('.authors', {
+            html: node.authors.join(', ')
         }));
-      });
 
-      frag.appendChild(citationUrlsEl);      
-    }
-    this.content.appendChild(frag);
-  };
+        // Add Source
+        // -------
+
+        var sourceText = "",
+            sourceFrag = "",
+            pagesFrag = "",
+            publisherFrag = "";
+
+        // Hack for handling unstructured citation types and render prettier
+        if (node.source && node.volume === '') {
+            sourceFrag = node.source;
+        } else if (node.source && node.volume) {
+            sourceFrag = [node.source, node.volume].join(', ');
+        }
+
+        if (node.fpage && node.lpage) {
+            pagesFrag = [node.fpage, node.lpage].join('-');
+        }
+
+        // Publisher Frag
+
+        var elems = [];
+
+        if (node.publisher_name && node.publisher_location) {
+            elems.push(node.publisher_name);
+            elems.push(node.publisher_location);
+        }
+
+        if (node.year) {
+            elems.push(node.year);
+        }
+
+        publisherFrag = elems.join(', ');
+
+        // Put them together
+        sourceText = sourceFrag;
+
+        // Add separator only if there's content already, and more to display
+        if (sourceFrag && (pagesFrag || publisherFrag)) {
+            sourceText += ": ";
+        }
+
+        if (pagesFrag && publisherFrag) {
+            sourceText += [pagesFrag, publisherFrag].join(", ");
+        } else {
+            // One of them without a separator char
+            sourceText += pagesFrag;
+            sourceText += publisherFrag;
+        }
+
+        frag.appendChild($$('.source', {
+            html: sourceText
+        }));
+
+        if (node.comment) {
+            var commentView = this.createTextView({path: [node.id, 'comment'], classes: 'comment'});
+            frag.appendChild(commentView.render().el);
+        }
+
+        // Add DOI (if available)
+        // -------
+
+        if (node.doi) {
+            frag.appendChild($$('.doi', {
+                children: [
+                    $$('b', {text: "DOI: "}),
+                    $$('a', {
+                        href: node.doi,
+                        target: "_new",
+                        text: node.doi
+                    })
+                ]
+            }));
+        }
+
+        if (node.citation_urls.length > 0) {
+            var citationUrlsEl = $$('.citation-urls');
+
+            _.each(node.citation_urls, function (url) {
+                citationUrlsEl.appendChild($$('a.url', {
+                    href: url.url,
+                    text: url.name,
+                    target: "_blank"
+                }));
+            });
+
+            frag.appendChild(citationUrlsEl);
+        }
+        this.content.appendChild(frag);
+    };
 };
 
 CitationView.Prototype.prototype = NodeView.prototype;
