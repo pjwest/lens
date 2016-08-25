@@ -949,8 +949,7 @@ NlmToLensConverter.Prototype = function() {
         // Populate Publication Info node
         this.extractPublicationInfo(state, article);
 
-        //Extact Footnotes
-        this.extractFootnotes(state, article);
+
 
         var body = article.querySelector("body");
         if (body) {
@@ -960,6 +959,9 @@ NlmToLensConverter.Prototype = function() {
         this.extractFigures(state, article);
 
         this.enhanceArticle(state, article);
+
+        //Extact Footnotes
+        this.extractFootnotes(state, article);
 
 
     };

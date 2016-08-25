@@ -24,11 +24,21 @@ FollowCrossrefs.Prototype = function () {
         e.stopPropagation();
         var refId = e.currentTarget.dataset.id;
         var crossRef = this.readerCtrl.getDocument().get(refId);
-        var crossRefTarget = crossRef.target;
-        if (crossRefTarget === undefined) {
-            crossRefTarget = crossRef.properties.id;
+        var crossRefTarget;
+        if (crossRef !==undefined) {
+            if (crossRef.target !== undefined) {
+                crossRefTarget = crossRef.target;
+                this.readerView.contentView.scrollTo(crossRefTarget);
+            }
+            if (crossRefTarget === undefined) {
+                if (crossRef.properties !== undefined) {
+                    crossRefTarget = crossRef.properties.id;
+                    this.readerView.contentView.scrollTo(crossRefTarget);
+                }
+            }
         }
-        this.readerView.contentView.scrollTo(crossRefTarget);
+
+
     };
 
 };
