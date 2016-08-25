@@ -2023,7 +2023,7 @@ NlmToLensConverter.Prototype = function() {
     this.footnote = function (state, fn, footnote) {
         var doc = state.doc;
         var footnoteNode;
-        var i;
+        var i,j;
 
         var id = state.nextId("article_footnote");
 
