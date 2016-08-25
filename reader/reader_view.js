@@ -248,7 +248,8 @@ ReaderView.Prototype = function() {
       // instead I would prefer to handle such focussing explicitely in a workflow
       if (state.fullscreen) classes.push("fullscreen");
       currentPanelView.addHighlight(state.focussedNode, classes.join(' '));
-      currentPanelView.scrollTo(state.focussedNode);
+     //TODO ref
+      //currentPanelView.scrollTo(state.focussedNode);
     }
 
     // A workflow needs to take care of
