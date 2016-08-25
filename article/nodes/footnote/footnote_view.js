@@ -43,7 +43,7 @@ CitationView.Prototype = function () {
                     italic.innerHTML = text[i].innerHTML;
                     frag.appendChild(italic);
                 }
-                if (text[i].tagName == 'xref') {
+                if (text[i].tagName == 'xref' && text[i].getAttribute('ref-type')==="sec") {
                     xref = document.createElement("a");
                     xref.className = "annotation cross_reference cross-reference";
                     xref.setAttribute("data-id", text[i].target);

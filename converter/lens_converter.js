@@ -2051,7 +2051,9 @@ NlmToLensConverter.Prototype = function() {
                 if (block.nodes[j].tagName == 'xref') {
                     var sourceId = block.nodes[j].getAttribute("rid");
                     var targetNode = state.doc.getNodeBySourceId(sourceId);
-                    block.nodes[j].target = targetNode.properties.id;
+                    if (targetNode !== undefined) {
+                        block.nodes[j].target = targetNode.properties.id;
+                    }
                 }
             }
         }
