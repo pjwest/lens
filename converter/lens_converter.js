@@ -1056,8 +1056,8 @@ NlmToLensConverter.Prototype = function() {
                 node = this.figure(state, figEl);
             } 
             //else if (type === "table-wrap") {
-            //    node = this.tableWrap(state, figEl);
-            } else if (type === "media") {
+            //    node = this.tableWrap(state, figEl)};
+             else if (type === "media") {
                 node = this.video(state, figEl);
             } else if (type === "supplementary-material") {
                 node = this.supplement(state, figEl);
