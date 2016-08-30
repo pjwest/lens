@@ -34,7 +34,6 @@ CitationView.Prototype = function () {
         var italic, xref;
 
         var text = node.properties.text[0].nodes;
-
         if (text !== undefined) {
             for (var i = 0; i < text.length; i++) {
                 if (text[i].tagName == 'italic') {
@@ -43,7 +42,7 @@ CitationView.Prototype = function () {
                     italic.innerHTML = text[i].innerHTML;
                     frag.appendChild(italic);
                 }
-                if (text[i].tagName == 'xref' && text[i].getAttribute('ref-type')==="sec") {
+                else if (text[i].tagName == 'xref' && text[i].getAttribute('ref-type')==="sec") {
                     xref = document.createElement("a");
                     xref.className = "annotation cross_reference cross-reference";
                     xref.setAttribute("data-id", text[i].target);

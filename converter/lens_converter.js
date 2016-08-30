@@ -1054,8 +1054,9 @@ NlmToLensConverter.Prototype = function() {
             var node = null;
             if (type === "fig") {
                 node = this.figure(state, figEl);
-            } else if (type === "table-wrap") {
-                node = this.tableWrap(state, figEl);
+            } 
+            //else if (type === "table-wrap") {
+            //    node = this.tableWrap(state, figEl);
             } else if (type === "media") {
                 node = this.video(state, figEl);
             } else if (type === "supplementary-material") {
@@ -1203,7 +1204,7 @@ NlmToLensConverter.Prototype = function() {
     this._ignoredBodyNodes = {
         // figures and table-wraps are treated globally
         "fig": true,
-        "table-wrap": true,
+       // "table-wrap": true,
         "speaker":true
     };
 
@@ -1272,6 +1273,9 @@ NlmToLensConverter.Prototype = function() {
     };
     this._bodyNodes["speech"] = function (state, child) {
         return this.speechText(state, child);
+    };
+    this._bodyNodes["table-wrap"] = function (state, child) {
+        return this.tableWrap(state, child);
     };
 
     // Overwirte in specific converter
@@ -1491,7 +1495,7 @@ NlmToLensConverter.Prototype = function() {
     "supplementary-material": true,
     "fig": true,
     "fig-group": true,
-    "table-wrap": true,
+    //"table-wrap": true,
     "media": true,
 
   };
@@ -1502,7 +1506,7 @@ NlmToLensConverter.Prototype = function() {
     "list": { handler: "list" },
     "disp-formula": { handler: "formula" },
     "speech": { handler: "speechText" },
-    //"speaker": { handler: "speakerName" },
+    "table-wrap": { handler: "tableWrap" },
 
   };
 
@@ -2527,7 +2531,7 @@ NlmToLensConverter.Prototype = function() {
     "box": "content",
     "supplement": "figures",
     "figure": "figures",
-    "html_table": "figures",
+    //"html_table": "figures",
     "video": "figures"
   };
 

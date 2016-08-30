@@ -249,7 +249,7 @@ ReaderView.Prototype = function() {
       if (state.fullscreen) classes.push("fullscreen");
       currentPanelView.addHighlight(state.focussedNode, classes.join(' '));
      //TODO ref
-      //currentPanelView.scrollTo(state.focussedNode);
+      currentPanelView.scrollTo(state.focussedNode);
     }
 
     // A workflow needs to take care of
