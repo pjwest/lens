@@ -18,7 +18,7 @@ NlmToLensConverter.Prototype = function() {
         "monospace": "code",
         "sub": "subscript",
         "sup": "superscript",
-        "sc": "custom_annotation",
+        "sc": "capitalize",
         "underline": "underline",
         "strike":"strike",
         "ext-link": "link",

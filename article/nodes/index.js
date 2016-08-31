@@ -3,6 +3,7 @@
 module.exports = {
   /* basic/abstract node types */
   "node": require("./node"),
+  "capitalize": require("./capitalize"),
   "composite": require("./composite"),
   "annotation": require("./annotation"),
   /* Annotation types */
