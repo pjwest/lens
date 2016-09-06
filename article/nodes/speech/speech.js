@@ -55,7 +55,6 @@ Speech.example = {
 };
 
 Speech.Prototype = function() {
-
   this.getChildrenIds = function() {
     return this.properties.children;
   };

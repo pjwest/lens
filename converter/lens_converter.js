@@ -1204,7 +1204,7 @@ NlmToLensConverter.Prototype = function() {
     this._ignoredBodyNodes = {
         // figures and table-wraps are treated globally
         "fig": true,
-       // "table-wrap": true,
+       "table": true,
         "speaker":true
     };
 
@@ -1242,6 +1242,10 @@ NlmToLensConverter.Prototype = function() {
     };
 
     this._bodyNodes["p"] = function (state, child) {
+        return this.paragraphGroup(state, child);
+    };
+
+    this._bodyNodes["td"] = function (state, child) {
         return this.paragraphGroup(state, child);
     };
     this._bodyNodes["sec"] = function (state, child) {
@@ -1900,23 +1904,31 @@ NlmToLensConverter.Prototype = function() {
     var doc = state.doc;
     var label = tableWrap.querySelector("label");
 
+
+      var childNodes = this.bodyNodes(state, util.dom.getChildren(tableWrap));
     var tableNode = {
       "id": state.nextId("html_table"),
       "source_id": tableWrap.getAttribute("id"),
       "type": "html_table",
       "title": "",
       "label": label ? label.textContent : "Table",
-      "content": "",
+      "children": "",
       "caption": null,
-      // Not supported yet ... need examples
       footers: [],
       // doi: "" needed?
     };
 
     // Note: using a DOM div element to create HTML
+    var content = {};
     var table = tableWrap.querySelector("table");
+      var trs= table.querySelectorAll("tr");
+      for (var i = 0; i < trs.length; i++) {
+        content[i]=  this.bodyNodes(state, util.dom.getChildren(trs[i]));
+      }
+
+
     if (table) {
-      tableNode.content = this.toHtml(table);
+        tableNode.children = content;
     }
     this.extractTableCaption(state, tableNode, tableWrap);
 

@@ -1,64 +1,73 @@
 "use strict";
 
-var _ = require("underscore");
-var NodeView = require("../node").View;
+var NodeView = require('../node').View;
+var CompositeView = require("../composite").View;
+
 var $$ = require("../../../substance/application").$$;
-var ResourceView = require('../../resource_view');
 
-// Substance.Paragraph.View
-// ==========================================================================
 
-var HTMLTableView = function(node, viewFactory, options) {
-  NodeView.call(this, node, viewFactory);
-
-  // Mix-in
-  ResourceView.call(this, options);
-
+var HTMLTableView = function (node, viewFactory) {
+    CompositeView.call(this, node, viewFactory);
 };
 
-HTMLTableView.Prototype = function() {
+HTMLTableView.Prototype = function () {
 
-  // Mix-in
-  _.extend(this, ResourceView.prototype);
+    this.render = function () {
+        NodeView.prototype.render.call(this);
+        var i, childView, childViewEl, htmlTable, row, tr, td;
 
-  this.isZoomable = true;
+        htmlTable = document.createElement('table');
+        htmlTable.setAttribute('class', 'html-table');
 
-  this.renderBody = function() {
+        var tr = document.createElement('tr');
+        tr.setAttribute('class', 'html-table');
 
-    // The actual content
-    // --------
-    //
+        var rows = this.node.getChildrenIds();
 
-    var tableWrapper = $$('.table-wrapper', {
-      html: this.node.content // HTML table content
-    });
+        if (rows !== undefined) {
+            for (var r in rows) {
+                row = rows[r];
+                tr = document.createElement('tr');
+                for (var i = 0; i < row.length; i++) {
+                    td = document.createElement('td');
+                    td.setAttribute('class', 'html-table');
+                    childView = this.createChildView(row[i].id);
+                    childViewEl = childView.render().el;
+                    td.appendChild(childViewEl);
+                    tr.appendChild(td);
+                    htmlTable.appendChild(tr);
 
-    this.content.appendChild(tableWrapper);
+                }
+            }
+        }
 
-    // Display footers (optional)
-    // --------
-    //
+        this.content.appendChild(htmlTable);
 
-    var footers = $$('.footers', {
+        this.el.appendChild(this.content);
+
+        return this;
+    };
+};
+
+HTMLTableView.Prototype.prototype = CompositeView.prototype;
+HTMLTableView.prototype = new HTMLTableView.Prototype();
+
+module.exports = HTMLTableView;
+
+/**
+ var footers = $$('.footers', {
       children: _.map(this.node.footers, function(footer) {
         return $$('.footer', { html: "<b>"+footer.label+"</b> " + footer.content });
       })
     });
 
-    // Display caption
+ // Display caption
 
 
-    if (this.node.caption) {
+ if (this.node.caption) {
       var captionView = this.createView(this.node.caption);
       this.content.appendChild(captionView.render().el);
     }
 
-    this.content.appendChild(footers);
-  };
-
-};
-
-HTMLTableView.Prototype.prototype = NodeView.prototype;
-HTMLTableView.prototype = new HTMLTableView.Prototype();
-
-module.exports = HTMLTableView;
+ this.content.appendChild(footers);
+ **/
