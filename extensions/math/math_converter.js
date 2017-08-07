@@ -21,6 +21,14 @@ MathConverter.Prototype = function MathConverterPrototype() {
   this._refTypeMapping["disp-formula"] = "formula_reference";
   this._refTypeMapping["statement"] = "math_environment_reference";
 
+  this.acceptedParagraphElements = _.extend(__super__.acceptedParagraphElements, {
+    "def-list": { handler: 'defList' }
+  });
+
+  this._annotationTypes = _.extend(__super__._annotationTypes, {
+    "roman": "custom_annotation"
+  });
+
   this.test = function(xmlDoc, documentUrl) {
     /* jshint unused:false */
     var publisherName = xmlDoc.querySelector("publisher-name").textContent;
@@ -66,6 +74,7 @@ MathConverter.Prototype = function MathConverterPrototype() {
     });
     return doc;
   };
+
 
   // TODO: the default implemenation should be plain, i.e. not adding an extra heading 'Main Text'
   // Instead the LensConverter should override this...

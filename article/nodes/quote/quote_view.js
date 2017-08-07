@@ -8,11 +8,10 @@ var $$ = require("../../../substance/application").$$;
 // ==========================================================================
 
 var QuoteView = function(node, viewFactory) {
-  CompositeView.call(this, node, viewFactory);
+    CompositeView.call(this, node, viewFactory);
 };
 
 QuoteView.Prototype = function() {
-
 
   this.render = function() {
     NodeView.prototype.render.call(this);

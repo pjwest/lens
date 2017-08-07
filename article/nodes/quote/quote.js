@@ -31,12 +31,10 @@ Quote.type = {
 
 Quote.description = {
   "name": "Quote",
-  "remarks": [
-    "A quote type.",
-  ],
+  "remarks": ["A quote type."],
   "properties": {
     "label": "string",
-    "children": "0..n Paragraph nodes",
+    "children": "0..n Paragraph nodes"
   }
 };
 

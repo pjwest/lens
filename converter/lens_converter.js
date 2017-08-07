@@ -12,33 +12,39 @@ var NlmToLensConverter = function(options) {
 
 NlmToLensConverter.Prototype = function() {
 
-    this._annotationTypes = {
-        "bold": "strong",
-        "italic": "emphasis",
-        "monospace": "code",
-        "sub": "subscript",
-        "sup": "superscript",
-        "sc": "capitalize",
-        "underline": "underline",
-        "strike":"strike",
-        "ext-link": "link",
-        "xref": "",
-        "email": "link",
-        "named-content": "",
-        "inline-formula": "inline-formula",
-        "uri": "link"
-    };
+  this._annotationTypes = {
+    "bold": "strong",
+    "italic": "emphasis",
+    "monospace": "code",
+    "sub": "subscript",
+    "sup": "superscript",
+    "sc": "custom_annotation",
+    "roman": "custom_annotation",
+    "sans-serif": "custom_annotation",
+    "styled-content": "custom_annotation",
+    "underline": "underline",
+    "ext-link": "link",
+    "xref": "",
+    "email": "link",
+    "named-content": "",
+    "inline-formula": "inline-formula",
+    "uri": "link", "strike":"strike"
+  };
 
-    // mapping from xref.refType to node type
-    this._refTypeMapping = {
-        "bibr": "citation_reference",
-        "fn": "footnote_reference",
-        "fig": "figure_reference",
-        "table": "figure_reference",
-        "supplementary-material": "figure_reference",
-        "other": "figure_reference",
-        "list": "definition_reference",
-    };
+  this._inlineNodeTypes = {
+    "fn": true,
+  };
+
+  // mapping from xref.refType to node type
+  this._refTypeMapping = {
+    "bibr": "citation_reference",
+    "fig": "figure_reference",
+    "table": "figure_reference",
+    "supplementary-material": "figure_reference",
+    "other": "figure_reference",
+    "list": "definition_reference",
+    "fn": "footnote_reference",
+  };
 
     // mapping of contrib type to human readable names
     // Can be overriden in specialized converter
@@ -71,771 +77,816 @@ NlmToLensConverter.Prototype = function() {
         "translator": "Translator"
     };
 
-    this.isAnnotation = function (type) {
-        return this._annotationTypes[type] !== undefined;
-    };
+  this.isAnnotation = function(type) {
+    return this._annotationTypes[type] !== undefined;
+  };
 
-    this.isParagraphish = function (node) {
-        for (var i = 0; i < node.childNodes.length; i++) {
-            var el = node.childNodes[i];
-            if (el.nodeType !== Node.TEXT_NODE && !this.isAnnotation(el.tagName.toLowerCase())) return false;
-        }
-        return true;
-    };
+  this.isInlineNode = function(type) {
+    return this._inlineNodeTypes[type] !== undefined;
+  };
 
-    this.test = function (xml, documentUrl) {
-        /* jshint unused:false */
-        return true;
-    };
+  this.isParagraphish = function(node) {
+    for (var i = 0; i < node.childNodes.length; i++) {
+      var el = node.childNodes[i];
+      if (el.nodeType !== Node.TEXT_NODE && !this.isAnnotation(el.tagName.toLowerCase())) return false;
+    }
+    return true;
+  };
 
-    // Helpers
-    // --------
+  this.test = function(xml, documentUrl) {
+    /* jshint unused:false */
+    return true;
+  };
 
-    this.getName = function (nameEl) {
-        if (!nameEl) return "N/A";
-        var names = [];
+  // Helpers
+  // --------
 
-        var surnameEl = nameEl.querySelector("surname");
-        var givenNamesEl = nameEl.querySelector("given-names");
-        var suffix = nameEl.querySelector("suffix");
+  this.getName = function(nameEl) {
+    if (!nameEl) return "N/A";
+    var names = [];
 
-        if (givenNamesEl) names.push(givenNamesEl.textContent);
-        if (surnameEl) names.push(surnameEl.textContent);
-        if (suffix) return [names.join(" "), suffix.textContent].join(", ");
+    var surnameEl = nameEl.querySelector("surname");
+    var givenNamesEl = nameEl.querySelector("given-names");
+    var suffix = nameEl.querySelector("suffix");
 
-        return names.join(" ");
-    };
+    if (givenNamesEl) names.push(givenNamesEl.textContent);
+    if (surnameEl) names.push(surnameEl.textContent);
+    if (suffix && suffix.textContent.trim() !== "") return [names.join(" "), suffix.textContent].join(", ");
 
-    this.toHtml = function (el) {
-        if (!el) return "";
-        var tmp = document.createElement("DIV");
-        tmp.appendChild(el.cloneNode(true));
-        return tmp.innerHTML;
-    };
+    return names.join(" ");
+  };
 
-    this.mmlToHtmlString = function (el) {
-        var html = this.toHtml(el);
-        html = html.replace(/<(\/)?mml:([^>]+)>/g, "<$1$2>");
-        return html;
-    };
+  this.toHtml = function(el) {
+    if (!el) return "";
+    var tmp = document.createElement("DIV");
+    tmp.appendChild(el.cloneNode(true));
+    return tmp.innerHTML;
+  };
 
-    this.selectDirectChildren = function (scopeEl, selector) {
-        // Note: if the ':scope' pseudo class was supported by more browsers
-        // it would be the correct selector based solution.
-        // However, for now we do simple filtering.
-        var result = [];
-        var els = scopeEl.querySelectorAll(selector);
-        for (var i = 0; i < els.length; i++) {
-            var el = els[i];
-            if (el.parentElement === scopeEl) result.push(el);
-        }
-        return result;
-    };
+  this.mmlToHtmlString = function(el) {
+    var html = this.toHtml(el);
+    html = html.replace(/<(\/)?mml:([^>]+)>/g, "<$1$2>");
+    return html;
+  };
 
-    // ### The main entry point for starting an import
+  this.selectDirectChildren = function(scopeEl, selector) {
+    // Note: if the ':scope' pseudo class was supported by more browsers
+    // it would be the correct selector based solution.
+    // However, for now we do simple filtering.
+    var result = [];
+    var els = scopeEl.querySelectorAll(selector);
+    for (var i = 0; i < els.length; i++) {
+      var el = els[i];
+      if (el.parentElement === scopeEl) result.push(el);
+    }
+    return result;
+  };
 
-    this.import = function (input) {
-        var xmlDoc;
+  // ### The main entry point for starting an import
 
-        // Note: when we are using jqueries get("<file>.xml") we
-        // magically get a parsed XML document already
-        if (_.isString(input)) {
-            var parser = new DOMParser();
-            xmlDoc = parser.parseFromString(input, "text/xml");
-        } else {
-            xmlDoc = input;
-        }
+  this.import = function(input) {
+    var xmlDoc;
 
-        this.sanitizeXML(xmlDoc);
+    // Note: when we are using jqueries get("<file>.xml") we
+    // magically get a parsed XML document already
+    if (_.isString(input)) {
+      var parser = new DOMParser();
+      xmlDoc = parser.parseFromString(input,"text/xml");
+    } else {
+      xmlDoc = input;
+    }
 
-        // Creating the output Document via factore, so that it is possible to
-        // create specialized NLMImporter later which would want to instantiate
-        // a specialized Document type
-        var doc = this.createDocument();
+    this.sanitizeXML(xmlDoc);
 
-        // For debug purposes
-        window.doc = doc;
+    // Creating the output Document via factore, so that it is possible to
+    // create specialized NLMImporter later which would want to instantiate
+    // a specialized Document type
+    var doc = this.createDocument();
 
-        // A deliverable state which makes this importer stateless
-        var state = this.createState(xmlDoc, doc);
-        // Note: all other methods are called corresponding
-        return this.document(state, xmlDoc);
-    };
+    // For debug purposes
+    window.doc = doc;
 
-    // Sometimes we need to deal with unconsistent XML
-    // When overwriting this function in your custom converter
-    // you can solve those issues in a preprocessing step instead of adding
-    // hacks in the main converter code
+    // A deliverable state which makes this importer stateless
+    var state = this.createState(xmlDoc, doc);
 
-    this.sanitizeXML = function (xmlDoc) {
-        /* jshint unused:false */
-    };
+    // Note: all other methods are called corresponding
+    return this.document(state, xmlDoc);
+  };
 
-    this.createState = function (xmlDoc, doc) {
-        return new NlmToLensConverter.State(this, xmlDoc, doc);
-    };
+  // Sometimes we need to deal with unconsistent XML
+  // When overwriting this function in your custom converter
+  // you can solve those issues in a preprocessing step instead of adding
+  // hacks in the main converter code
 
-    // Overridden to create a Lens Article instance
-    this.createDocument = function () {
+  this.sanitizeXML = function(xmlDoc) {
+    /* jshint unused:false */
+  };
 
-        var doc = new Article();
-        return doc;
-    };
+  this.createState = function(xmlDoc, doc) {
+    return new NlmToLensConverter.State(this, xmlDoc, doc);
+  };
 
-    this.show = function (state, nodes) {
-        _.each(nodes, function (n) {
-            this.showNode(state, n);
-        }, this);
-    };
+  // Overridden to create a Lens Article instance
+  this.createDocument = function() {
 
-    this.extractDate = function (dateEl) {
-        if (!dateEl) return null;
+    var doc = new Article();
+    return doc;
+  };
 
-        var year = dateEl.querySelector("year");
-        var month = dateEl.querySelector("month");
-        var day = dateEl.querySelector("day");
+  this.show = function(state, nodes) {
+    _.each(nodes, function(n) {
+      this.showNode(state, n);
+    }, this);
+  };
 
-        var res = [year.textContent];
-        if (month) res.push(month.textContent);
-        if (day) res.push(day.textContent);
+  this.extractDate = function(dateEl) {
+    if (!dateEl) return null;
 
-        return res.join("-");
-    };
+    var year = dateEl.querySelector("year");
+    var month = dateEl.querySelector("month");
+    var day = dateEl.querySelector("day");
 
-    this.extractPublicationInfo = function (state, article) {
-        var doc = state.doc;
+    var res = [year.textContent];
+    if (month) res.push(month.textContent);
+    if (day) res.push(day.textContent);
 
-        var articleMeta = article.querySelector("article-meta");
-        var pubDate = articleMeta.querySelector("pub-date");
-        var history = articleMeta.querySelectorAll("history date");
+    return res.join("-");
+  };
 
-        // Journal title
-        //
-        var journalTitle = article.querySelector("journal-title");
+  this.extractPublicationInfo = function(state, article) {
+    var doc = state.doc;
 
-        // DOI
-        //
-        // <article-id pub-id-type="doi">10.7554/eLife.00003</article-id>
-        var articleDOI = article.querySelector("article-id[pub-id-type=doi]");
+    var articleMeta = article.querySelector("article-meta");
+    var pubDate = articleMeta.querySelector("pub-date");
+    var history = articleMeta.querySelectorAll("history date");
 
-        // Related article if exists
-        //
-        // TODO: can't there be more than one?
-        var relatedArticle = article.querySelector("related-article");
-
-        // Article information
-        var articleInfo = this.extractArticleInfo(state, article);
-
-        // Create PublicationInfo node
-        // ---------------
-
-        var pubInfoNode = {
-            "id": "publication_info",
-            "type": "publication_info",
-            "published_on": this.extractDate(pubDate),
-            "journal": journalTitle ? journalTitle.textContent : "",
-            "related_article": relatedArticle ? relatedArticle.getAttribute("xlink:href") : "",
-            "doi": articleDOI ? articleDOI.textContent : "",
-            "article_info": articleInfo.id,
-            // TODO: 'article_type' should not be optional; we need to find a good default implementation
-            "article_type": "",
-            // Optional fields not covered by the default implementation
-            // Implement config.enhancePublication() to complement the data
-            // TODO: think about how we could provide good default implementations
-            "keywords": [],
-            "links": [],
-            "subjects": [],
-            "supplements": [],
-            "history": [],
-            // TODO: it seems messy to have this in the model
-            // Instead it would be cleaner to add 'custom': 'object' field
-            "research_organisms": [],
-            // TODO: this is in the schema, but seems to be unused
-            "provider": "",
-        };
-
-        for (var i = 0; i < history.length; i++) {
-            var dateEl = history[i];
-            var historyEntry = {
-                type: dateEl.getAttribute('date-type'),
-                date: this.extractDate(dateEl)
-            };
-            pubInfoNode.history.push(historyEntry);
-        }
-
-        doc.create(pubInfoNode);
-        doc.show("info", pubInfoNode.id, 0);
-
-        this.enhancePublicationInfo(state, pubInfoNode);
-    };
-
-    this.extractArticleInfo = function (state, article) {
-        // Initialize the Article Info object
-        var articleInfo = {
-            "id": "articleinfo",
-            "type": "paragraph",
-        };
-        var doc = state.doc;
-
-        var nodes = [];
-
-        // Reviewing editor
-        nodes = nodes.concat(this.extractEditor(state, article));
-        // Datasets
-        nodes = nodes.concat(this.extractDatasets(state, article));
-        // Includes meta information (such as impact statement for eLife)
-        nodes = nodes.concat(this.extractCustomMetaGroup(state, article));
-        // Acknowledgments
-        nodes = nodes.concat(this.extractAcknowledgements(state, article));
-        // License and Copyright
-        nodes = nodes.concat(this.extractCopyrightAndLicense(state, article));
-        // Notes (Footnotes + Author notes)
-        nodes = nodes.concat(this.extractNotes(state, article));
-
-        articleInfo.children = nodes;
-        doc.create(articleInfo);
-
-        return articleInfo;
-    };
-
-    // Get reviewing editor
-    // --------------
-    // TODO: it is possible to have multiple editors. This does only show the first one
-    //   However, this would be easy: just querySelectorAll and have 'Reviewing Editors' as heading when there are multiple nodes found
-
-    this.extractEditor = function (state, article) {
-        var nodes = [];
-        var doc = state.doc;
-
-        var editor = article.querySelector("contrib[contrib-type=editor]");
-        if (editor) {
-            var content = [];
-
-            var name = this.getName(editor.querySelector('name'));
-            if (name) content.push(name);
-            var inst = editor.querySelector("institution");
-            if (inst) content.push(inst.textContent);
-            var country = editor.querySelector("country");
-            if (country) content.push(country.textContent);
-
-            var h1 = {
-                "type": "heading",
-                "id": state.nextId("heading"),
-                "level": 3,
-                "content": "Reviewing Editor"
-            };
-
-            doc.create(h1);
-            nodes.push(h1.id);
-
-            var t1 = {
-                "type": "text",
-                "id": state.nextId("text"),
-                "content": content.join(", ")
-            };
-
-            doc.create(t1);
-            nodes.push(t1.id);
-        }
-        return nodes;
-    };
-
+    // Journal title
     //
-    // Extracts major datasets
-    // -----------------------
+    var journalTitle = article.querySelector("journal-title");
 
-    this.extractDatasets = function (state, article) {
-        var nodes = [];
-        var doc = state.doc;
+    // DOI
+    //
+    // <article-id pub-id-type="doi">10.7554/eLife.00003</article-id>
+    var articleDOI = article.querySelector("article-id[pub-id-type=doi]");
 
-        var datasets = article.querySelectorAll('sec');
-        for (var i = 0; i < datasets.length; i++) {
-            var data = datasets[i];
-            var type = data.getAttribute('sec-type');
-            if (type === 'datasets') {
-                var h1 = {
-                    "type": "heading",
-                    "id": state.nextId("heading"),
-                    "level": 3,
-                    "content": "Major Datasets"
-                };
-                doc.create(h1);
-                nodes.push(h1.id);
-                var ids = this.datasets(state, util.dom.getChildren(data));
-                for (var j = 0; j < ids.length; j++) {
-                    if (ids[j]) {
-                        nodes.push(ids[j]);
-                    }
-                }
-            }
-        }
-        return nodes;
+    // Related article if exists
+    //
+    // TODO: can't there be more than one?
+    var relatedArticle = article.querySelector("related-article");
+
+    // Article information
+    var articleInfo = this.extractArticleInfo(state, article);
+
+    // Funding information
+    var fundingInfo = this.extractFundingInfo(state, article);
+
+    // Create PublicationInfo node
+    // ---------------
+
+    var pubInfoNode = {
+      "id": "publication_info",
+      "type": "publication_info",
+      "published_on": this.extractDate(pubDate),
+      "journal": journalTitle ? journalTitle.textContent : "",
+      "related_article": relatedArticle ? relatedArticle.getAttribute("xlink:href") : "",
+      "doi": articleDOI ? articleDOI.textContent : "",
+      "article_info": articleInfo.id,
+      "funding_info": fundingInfo,
+      // TODO: 'article_type' should not be optional; we need to find a good default implementation
+      "article_type": "",
+      // Optional fields not covered by the default implementation
+      // Implement config.enhancePublication() to complement the data
+      // TODO: think about how we could provide good default implementations
+      "keywords": [],
+      "links": [],
+      "subjects": [],
+      "supplements": [],
+      "history": [],
+      // TODO: it seems messy to have this in the model
+      // Instead it would be cleaner to add 'custom': 'object' field
+      "research_organisms": [],
+      // TODO: this is in the schema, but seems to be unused
+      "provider": "",
     };
 
-    var _capitalized = function (str, all) {
-        if (all) {
-            return str.split(' ').map(function (s) {
-                return _capitalized(s);
-            }).join(' ');
-        } else {
-            return str.charAt(0).toUpperCase() + str.slice(1);
-        }
+    for (var i = 0; i < history.length; i++) {
+      var dateEl = history[i];
+      var historyEntry = {
+        type: dateEl.getAttribute('date-type'),
+        date: this.extractDate(dateEl)
+      };
+      pubInfoNode.history.push(historyEntry);
+    }
+
+    doc.create(pubInfoNode);
+    doc.show("info", pubInfoNode.id, 0);
+
+    this.enhancePublicationInfo(state, pubInfoNode);
+  };
+
+  this.extractArticleInfo = function(state, article) {
+    // Initialize the Article Info object
+    var articleInfo = {
+      "id": "articleinfo",
+      "type": "paragraph",
     };
+    var doc = state.doc;
+
+    var nodes = [];
+
+    // Reviewing editor
+    nodes = nodes.concat(this.extractEditor(state, article));
+    // Datasets
+    nodes = nodes.concat(this.extractDatasets(state, article));
+    // Includes meta information (such as impact statement for eLife)
+    nodes = nodes.concat(this.extractCustomMetaGroup(state, article));
+    // Acknowledgments
+    nodes = nodes.concat(this.extractAcknowledgements(state, article));
+    // License and Copyright
+    nodes = nodes.concat(this.extractCopyrightAndLicense(state, article));
+    // Notes (<note> elements)
+    nodes = nodes.concat(this.extractNotes(state, article));
+
+    articleInfo.children = nodes;
+    doc.create(articleInfo);
+
+    return articleInfo;
+  };
+
+  this.extractFundingInfo = function(state, article) {
+    var fundingInfo = [];
+    var fundingStatementEls = article.querySelectorAll("funding-statement");
+    if (fundingStatementEls.length > 0){
+      for (var i = 0; i < fundingStatementEls.length; i++) {
+        fundingInfo.push(this.annotatedText(state, fundingStatementEls[i], ["publication_info", "funding_info", i]));
+      }
+    }
+
+    return fundingInfo;
+  };
+
+  // Get reviewing editor
+  // --------------
+  // TODO: it is possible to have multiple editors. This does only show the first one
+  //   However, this would be easy: just querySelectorAll and have 'Reviewing Editors' as heading when there are multiple nodes found
+
+  this.extractEditor = function(state, article) {
+    var nodes = [];
+    var doc = state.doc;
+
+    var editor = article.querySelector("contrib[contrib-type=editor]");
+    if (editor) {
+      var content = [];
+
+      var name = this.getName(editor.querySelector('name'));
+      if (name) content.push(name);
+      var inst = editor.querySelector("institution");
+      if (inst) content.push(inst.textContent);
+      var country = editor.querySelector("country");
+      if (country) content.push(country.textContent);
+
+      var h1 = {
+        "type": "heading",
+        "id": state.nextId("heading"),
+        "level": 3,
+        "content": "Reviewing Editor"
+      };
+
+      doc.create(h1);
+      nodes.push(h1.id);
+
+      var t1 = {
+        "type": "text",
+        "id": state.nextId("text"),
+        "content": content.join(", ")
+      };
+
+      doc.create(t1);
+      nodes.push(t1.id);
+    }
+    return nodes;
+  };
+
+  //
+  // Extracts major datasets
+  // -----------------------
+
+  this.extractDatasets = function(state, article) {
+    var nodes = [];
+    var doc = state.doc;
+
+    var datasets = article.querySelectorAll('sec');
+    for (var i = 0;i <datasets.length;i++){
+      var data = datasets[i];
+      var type = data.getAttribute('sec-type');
+      if (type === 'datasets') {
+        var h1 = {
+          "type" : "heading",
+          "id" : state.nextId("heading"),
+          "level" : 3,
+          "content" : "Major Datasets"
+        };
+        doc.create(h1);
+        nodes.push(h1.id);
+        var ids = this.datasets(state, util.dom.getChildren(data));
+        for (var j=0;j < ids.length;j++) {
+          if (ids[j]) {
+            nodes.push(ids[j]);
+          }
+        }
+      }
+    }
+    return nodes;
+  };
+
+  var _capitalized = function(str, all) {
+    if (all) {
+      return str.split(' ').map(function(s){
+        return _capitalized(s);
+      }).join(' ');
+    } else {
+      return str.charAt(0).toUpperCase() + str.slice(1);
+    }
+  };
 
     this.capitalized = function (str, all) {
         return _capitalized(str, all);
     };
 
-    //
-    // Extracts Acknowledgements
-    // -------------------------
+  //
+  // Extracts Acknowledgements
+  // -------------------------
 
-    this.extractAcknowledgements = function (state, article) {
-        var nodes = [];
-        var doc = state.doc;
+  this.extractAcknowledgements = function(state, article) {
+    var nodes = [];
+    var doc = state.doc;
 
-        var acks = article.querySelectorAll("ack");
-        if (acks && acks.length > 0) {
-            _.each(acks, function (ack) {
-                var title = ack.querySelector('title');
-                var header = {
-                    "type": "heading",
-                    "id": state.nextId("heading"),
-                    "level": 3,
-                    "content": title ? this.capitalized(title.textContent.toLowerCase(), "all") : "Acknowledgements"
-                };
-                doc.create(header);
-                nodes.push(header.id);
-
-                // There may be multiple paragraphs per ack element
-                var pars = this.bodyNodes(state, util.dom.getChildren(ack), {
-                    ignore: ["title"]
-                });
-                _.each(pars, function (par) {
-                    nodes.push(par.id);
-                });
-            }, this);
-        }
-
-        return nodes;
-    };
-
-    //
-    // Extracts footnotes that should be shown in article info
-    // ------------------------------------------
-    //
-    // Needs to be overwritten in configuration
-
-    this.extractNotes = function (/*state, article*/) {
-        var nodes = [];
-        return nodes;
-    };
-
-    // Can be overridden by custom converter to ignore <meta-name> values.
-    // TODO: Maybe switch to a whitelisting approach, so we don't show
-    // nonsense. See HighWire implementation
-    this.__ignoreCustomMetaNames = [];
-
-    this.extractCustomMetaGroup = function (state, article) {
-        var nodeIds = [];
-        var doc = state.doc;
-
-        var customMetaEls = article.querySelectorAll('article-meta-group custom-meta');
-        if (customMetaEls.length === 0) return nodeIds;
-
-        for (var i = 0; i < customMetaEls.length; i++) {
-            var customMetaEl = customMetaEls[i];
-
-            var metaNameEl = customMetaEl.querySelector('meta-name');
-            var metaValueEl = customMetaEl.querySelector('meta-value');
-
-            if (!_.include(this.__ignoreCustomMetaNames, metaNameEl.textContent)) {
-                var header = {
-                    "type": "heading",
-                    "id": state.nextId("heading"),
-                    "level": 3,
-                    "content": ""
-                };
-                header.content = this.annotatedText(state, metaNameEl, [header.id, 'content']);
-                doc.create(header);
-                var bodyNodes = this.paragraphGroup(state, metaValueEl);
-
-                nodeIds.push(header.id);
-                nodeIds = nodeIds.concat(_.pluck(bodyNodes, 'id'));
-            }
-        }
-        return nodeIds;
-    };
-
-    //
-    // Extracts Copyright and License Information
-    // ------------------------------------------
-
-    this.extractCopyrightAndLicense = function (state, article) {
-        var nodes = [];
-        var doc = state.doc;
-
-        var license = article.querySelector("permissions");
-        if (license) {
-            var h1 = {
-                "type": "heading",
-                "id": state.nextId("heading"),
-                "level": 3,
-                "content": locales.CopyRightAndLicenses
-            };
-            doc.create(h1);
-            nodes.push(h1.id);
-
-            // TODO: this is quite messy. We should introduce a dedicated note for article info
-            // and do that rendering related things there, e.g., '. ' separator
-
-            var par;
-            var copyright = license.querySelector("copyright-statement");
-            if (copyright) {
-                par = this.paragraphGroup(state, copyright);
-                if (par && par.length) {
-                    nodes = nodes.concat(_.map(par, function (p) {
-                        return p.id;
-                    }));
-                    // append '.' only if there is none yet
-                    if (copyright.textContent.trim().slice(-1) !== '.') {
-                        // TODO: this needs to be more robust... what if there are no children
-                        var textid = _.last(_.last(par).children);
-                        doc.nodes[textid].content += ". ";
-                    }
-                }
-            }
-            var lic = license.querySelector("license");
-            if (lic) {
-                for (var child = lic.firstElementChild; child; child = child.nextElementSibling) {
-                    var type = util.dom.getNodeType(child);
-                    if (type === 'p' || type === 'license-p') {
-                        par = this.paragraphGroup(state, child);
-                        if (par && par.length) {
-                            nodes = nodes.concat(_.pluck(par, 'id'));
-                        }
-                    }
-                }
-            }
-        }
-
-        return nodes;
-    };
-
-    this.extractCover = function (state, article) {
-        var doc = state.doc;
-        var docNode = doc.get("document");
-        var cover = {
-            id: "cover",
-            type: "cover",
-            title: docNode.title,
-            authors: [], // docNode.authors,
-            abstract: docNode.abstract
+    var acks = article.querySelectorAll("ack");
+    if (acks && acks.length > 0) {
+      _.each(acks, function(ack) {
+        var title = ack.querySelector('title');
+        var header = {
+          "type" : "heading",
+          "id" : state.nextId("heading"),
+          "level" : 3,
+          "content" : title ? this.capitalized(title.textContent.toLowerCase(), "all") : "Acknowledgements"
         };
 
-        // Create authors paragraph that has contributor_reference annotations
-        // to activate the author cards
+        doc.create(header);
+        nodes.push(header.id);
 
-        _.each(docNode.authors, function (contributorId) {
-            var contributor = doc.get(contributorId);
+        // There may be multiple paragraphs per ack element
+        var pars = this.bodyNodes(state, util.dom.getChildren(ack), {
+          ignore: ["title"]
+        });
 
-            var authorsPara = {
-                "id": "text_" + contributorId + "_reference",
-                "type": "text",
-                "content": contributor.name
-            };
+        _.each(pars, function(par) {
+          nodes.push(par.id);
+        });
+      }, this);
+    }
 
-            doc.create(authorsPara);
-            cover.authors.push(authorsPara.id);
+    return nodes;
+  };
 
-            var anno = {
-                id: state.nextId("contributor_reference"),
-                type: "contributor_reference",
-                path: ["text_" + contributorId + "_reference", "content"],
-                range: [0, contributor.name.length],
-                target: contributorId
-            };
+  //
+  // Extracts notes that should be shown in article info
+  // ------------------------------------------
+  //
+  this.extractNotes = function(state, article) {
+    /* jshint unused:false */
+    return [];
+  };
 
-            doc.create(anno);
-        }, this);
+  // Can be overridden by custom converter to ignore <meta-name> values.
+  // TODO: Maybe switch to a whitelisting approach, so we don't show
+  // nonsense. See HighWire implementation
+  this.__ignoreCustomMetaNames = [];
 
-        // Move to elife configuration
-        // -------------------
-        // <article-categories>
-        // <subj-group subj-group-type="display-channel">...</subj-group>
-        // <subj-group subj-group-type="heading">...</subj-group>
-        // </article-categories>
+  this.extractCustomMetaGroup = function(state, article) {
+    var nodeIds = [];
+    var doc = state.doc;
 
-        // <article-categories>
-        //   <subj-group subj-group-type="display-channel">
-        //     <subject>Research article</subject>
-        //   </subj-group>
-        //   <subj-group subj-group-type="heading">
-        //     <subject>Biophysics and structural biology</subject>
-        //   </subj-group>
-        // </article-categories>
+    var customMetaEls = article.querySelectorAll('article-meta custom-meta');
+    if (customMetaEls.length === 0) return nodeIds;
 
-        this.enhanceCover(state, cover, article);
+    for (var i = 0; i < customMetaEls.length; i++) {
+      var customMetaEl = customMetaEls[i];
 
-        doc.create(cover);
-        doc.show("content", cover.id, 0);
-    };
+      var metaNameEl = customMetaEl.querySelector('meta-name');
+      var metaValueEl = customMetaEl.querySelector('meta-value');
 
-    // Note: Substance.Article supports only one author.
-    // We use the first author found in the contribGroup for the 'creator' property.
-    this.contribGroup = function (state, contribGroup) {
-        var i;
-        var contribs = contribGroup.querySelectorAll("contrib");
-        for (i = 0; i < contribs.length; i++) {
-            this.contributor(state, contribs[i]);
-        }
-        // Extract on-behalf-of element and stick it to the document
-        var doc = state.doc;
-        var onBehalfOf = contribGroup.querySelector("on-behalf-of");
-        if (onBehalfOf) doc.on_behalf_of = onBehalfOf.textContent.trim();
-    };
-
-    this.affiliation = function (state, aff) {
-        var doc = state.doc;
-
-        var institution = aff.querySelector("institution");
-        var country = aff.querySelector("country");
-        var label = aff.querySelector("label");
-        var department = aff.querySelector("addr-line named-content[content-type=department]");
-        var city = aff.querySelector("addr-line named-content[content-type=city]");
-
-        // TODO: this is a potential place for implementing a catch-bin
-        // For that, iterate all children elements and fill into properties as needed or add content to the catch-bin
-
-        var affiliationNode = {
-            id: state.nextId("affiliation"),
-            type: "affiliation",
-            source_id: aff.getAttribute("id"),
-            label: label ? label.textContent : null,
-            department: department ? department.textContent : null,
-            city: city ? city.textContent : null,
-            institution: institution ? institution.textContent : null,
-            country: country ? country.textContent : null
+      if (!_.include(this.__ignoreCustomMetaNames, metaNameEl.textContent)) {
+        var header = {
+          "type" : "heading",
+          "id" : state.nextId("heading"),
+          "level" : 3,
+          "content" : ""
         };
-        doc.create(affiliationNode);
+        header.content = this.annotatedText(state, metaNameEl, [header.id, 'content']);
+        doc.create(header);
+        var bodyNodes = this.paragraphGroup(state, metaValueEl);
+
+        nodeIds.push(header.id);
+        nodeIds = nodeIds.concat(_.pluck(bodyNodes, 'id'));
+      }
+    }
+    return nodeIds;
+  };
+
+  //
+  // Extracts Copyright and License Information
+  // ------------------------------------------
+
+  this.extractCopyrightAndLicense = function(state, article) {
+    var nodes = [];
+    var doc = state.doc;
+
+    var license = article.querySelector("permissions");
+    if (license) {
+      var h1 = {
+        "type" : "heading",
+        "id" : state.nextId("heading"),
+        "level" : 3,
+        "content" : "Copyright & License"
+      };
+      doc.create(h1);
+      nodes.push(h1.id);
+
+      // TODO: this is quite messy. We should introduce a dedicated note for article info
+      // and do that rendering related things there, e.g., '. ' separator
+
+      var par;
+      var copyright = license.querySelector("copyright-statement");
+      if (copyright) {
+        par = this.paragraphGroup(state, copyright);
+        if (par && par.length) {
+          nodes = nodes.concat( _.map(par, function(p) { return p.id; } ) );
+          // append '.' only if there is none yet
+          if (copyright.textContent.trim().slice(-1) !== '.') {
+            // TODO: this needs to be more robust... what if there are no children
+            var textid = _.last(_.last(par).children);
+            doc.nodes[textid].content += ". ";
+          }
+        }
+      }
+      var lic = license.querySelector("license");
+      if (lic) {
+        for (var child = lic.firstElementChild; child; child = child.nextElementSibling) {
+          var type = util.dom.getNodeType(child);
+          if (type === 'p' || type === 'license-p') {
+            par = this.paragraphGroup(state, child);
+            if (par && par.length) {
+              nodes = nodes.concat( _.pluck(par, 'id') );
+            }
+          }
+        }
+      }
+    }
+
+    return nodes;
+  };
+
+  this.extractCover = function(state, article) {
+    var doc = state.doc;
+    var docNode = doc.get("document");
+    var cover = {
+      id: "cover",
+      type: "cover",
+      title: docNode.title,
+      authors: [], // docNode.authors,
+      abstract: docNode.abstract
     };
 
-    this.contributor = function (state, contrib) {
-        var doc = state.doc;
+    // Create authors paragraph that has contributor_reference annotations
+    // to activate the author cards
 
-        var id = state.nextId("contributor");
-        var contribNode = {
-            id: id,
-            source_id: contrib.getAttribute("id"),
-            type: "contributor",
-            name: "",
-            affiliations: [],
-            fundings: [],
-            bio: [],
+    _.each(docNode.authors, function(contributorId) {
+      var contributor = doc.get(contributorId);
 
-            // Not yet supported... need examples
-            image: "",
-            deceased: false,
-            emails: [],
-            contribution: "",
-            members: []
-        };
+      var authorsPara = {
+        "id": "text_"+contributorId+"_reference",
+        "type": "text",
+        "content": contributor.name
+      };
 
-        // Extract contrib type
-        var contribType = contrib.getAttribute("contrib-type");
+      doc.create(authorsPara);
+      cover.authors.push(authorsPara.id);
 
-        // Assign human readable version
-        contribNode["contributor_type"] = this._contribTypeMapping[contribType];
+      var anno = {
+        id: state.nextId("contributor_reference"),
+        type: "contributor_reference",
+        path: ["text_" + contributorId + "_reference", "content"],
+        range: [0, contributor.name.length],
+        target: contributorId
+      };
 
-        // Extract role
-        var role = contrib.querySelector("role");
-        if (role) {
-            contribNode["role"] = role.textContent;
-        }
+      doc.create(anno);
+    }, this);
 
-        // Search for author bio and author image
-        var bio = contrib.querySelector("bio");
-        if (bio) {
-            _.each(util.dom.getChildren(bio), function (par) {
-                var graphic = par.querySelector("graphic");
-                if (graphic) {
-                    var imageUrl = graphic.getAttribute("xlink:href");
-                    contribNode.image = imageUrl;
-                } else {
-                    var pars = this.paragraphGroup(state, par);
-                    if (pars.length > 0) {
-                        contribNode.bio = [ pars[0].id ];
-                    }
-                }
-            }, this);
-        }
+    // Move to elife configuration
+    // -------------------
+    // <article-categories>
+    // <subj-group subj-group-type="display-channel">...</subj-group>
+    // <subj-group subj-group-type="heading">...</subj-group>
+    // </article-categories>
 
-        // Deceased?
+    // <article-categories>
+    //   <subj-group subj-group-type="display-channel">
+    //     <subject>Research article</subject>
+    //   </subj-group>
+    //   <subj-group subj-group-type="heading">
+    //     <subject>Biophysics and structural biology</subject>
+    //   </subj-group>
+    // </article-categories>
 
-        if (contrib.getAttribute("deceased") === "yes") {
-            contribNode.deceased = true;
-        }
+    this.enhanceCover(state, cover, article);
 
-        // Extract ORCID
-        // -----------------
-        //
-        // <uri content-type="orcid" xlink:href="http://orcid.org/0000-0002-7361-560X"/>
+    doc.create(cover);
+    doc.show("content", cover.id, 0);
+  };
 
-        var orcidURI = contrib.querySelector("uri[content-type=orcid]");
-        if (orcidURI) {
-            contribNode.orcid = orcidURI.getAttribute("xlink:href");
-        }
+  // Note: Substance.Article supports only one author.
+  // We use the first author found in the contribGroup for the 'creator' property.
+  this.contribGroup = function(state, contribGroup) {
+    var i;
+    var contribs = contribGroup.querySelectorAll("contrib");
+    for (i = 0; i < contribs.length; i++) {
+      this.contributor(state, contribs[i]);
+    }
+    // Extract on-behalf-of element and stick it to the document
+    var doc = state.doc;
+    var onBehalfOf = contribGroup.querySelector("on-behalf-of");
+    if (onBehalfOf) doc.on_behalf_of = onBehalfOf.textContent.trim();
+  };
 
-        // Extracting equal contributions
-        var nameEl = contrib.querySelector("name");
-        if (nameEl) {
-            contribNode.name = this.getName(nameEl);
+  this.affiliation = function(state, aff) {
+    var doc = state.doc;
+
+    var department = aff.querySelector("institution[content-type=dept]");
+    if (department) {
+      var institution = aff.querySelector("institution:not([content-type=dept])");
+    } else {
+      var department = aff.querySelector("addr-line named-content[content-type=department]");
+      var institution = aff.querySelector("institution");
+    }
+    var country = aff.querySelector("country");
+    var label = aff.querySelector("label");
+
+    var city = aff.querySelector("addr-line named-content[content-type=city]");
+    // TODO: there are a lot more elements which can have this.
+    var specific_use = aff.getAttribute('specific-use');
+
+    // TODO: this is a potential place for implementing a catch-bin
+    // For that, iterate all children elements and fill into properties as needed or add content to the catch-bin
+
+    var affiliationNode = {
+      id: state.nextId("affiliation"),
+      type: "affiliation",
+      source_id: aff.getAttribute("id"),
+      label: label ? label.textContent : null,
+      department: department ? department.textContent : null,
+      city: city ? city.textContent : null,
+      institution: institution ? institution.textContent : null,
+      country: country ? country.textContent: null,
+      specific_use: specific_use || null
+    };
+    doc.create(affiliationNode);
+  };
+
+  this.contributor = function(state, contrib) {
+    var doc = state.doc;
+
+    var id = state.nextId("contributor");
+    var contribNode = {
+      id: id,
+      source_id: contrib.getAttribute("id"),
+      type: "contributor",
+      name: "",
+      affiliations: [],
+      fundings: [],
+      bio: [],
+
+      // Not yet supported... need examples
+      image: "",
+      deceased: false,
+      emails: [],
+      contribution: "",
+      members: []
+    };
+
+    // Extract contrib type
+    var contribType = contrib.getAttribute("contrib-type");
+
+    // Assign human readable version
+    contribNode["contributor_type"] = this._contribTypeMapping[contribType];
+
+    // Extract role
+    var role = contrib.querySelector("role");
+    if (role) {
+      contribNode["role"] = role.textContent;
+    }
+
+    // Search for author bio and author image
+    var bio = contrib.querySelector("bio");
+    if (bio) {
+      _.each(util.dom.getChildren(bio), function(par) {
+        var graphic = par.querySelector("graphic");
+        if (graphic) {
+          var imageUrl = graphic.getAttribute("xlink:href");
+          contribNode.image = imageUrl;
         } else {
-            var collab = contrib.querySelector("collab");
-            // Assuming this is an author group
-            if (collab) {
-                contribNode.name = collab.textContent;
-            } else {
-                contribNode.name = "N/A";
-            }
+          var pars = this.paragraphGroup(state, par);
+          if (pars.length > 0) {
+            contribNode.bio = [ pars[0].id ];
+          }
         }
+      }, this);
+    }
 
-        this.extractContributorProperties(state, contrib, contribNode);
+    // Deceased?
+
+    if (contrib.getAttribute("deceased") === "yes") {
+      contribNode.deceased = true;
+    }
+
+    // Extract ORCID
+    // -----------------
+    //
+    // <uri content-type="orcid" xlink:href="http://orcid.org/0000-0002-7361-560X"/>
+
+    var orcidURI = contrib.querySelector("uri[content-type=orcid]");
+    if (orcidURI) {
+      contribNode.orcid = orcidURI.getAttribute("xlink:href");
+    }
+
+    // Extracting equal contributions
+    var nameEl = contrib.querySelector("name");
+    if (nameEl) {
+      contribNode.name = this.getName(nameEl);
+    } else {
+      var collab = contrib.querySelector("collab");
+      // Assuming this is an author group
+      if (collab) {
+        contribNode.name = collab.textContent;
+      } else {
+        contribNode.name = "N/A";
+      }
+    }
+
+    this.extractContributorProperties(state, contrib, contribNode);
 
 
-        // HACK: for cases where no explicit xrefs are given per
-        // contributor we assin all available affiliations
-        if (contribNode.affiliations.length === 0) {
-            contribNode.affiliations = state.affiliations;
+    // HACK: for cases where no explicit xrefs are given per
+    // contributor we assin all available affiliations
+    if (contribNode.affiliations.length === 0) {
+      contribNode.affiliations = state.affiliations;
+    }
+
+    // HACK: if author is assigned a conflict, remove the redundant
+    // conflict entry "The authors have no competing interests to declare"
+    // This is a data-modelling problem on the end of our input XML
+    // so we need to be smart about it in the converter
+    if (contribNode.competing_interests.length > 1) {
+      contribNode.competing_interests = _.filter(contribNode.competing_interests, function(confl) {
+        return confl.indexOf("no competing") < 0;
+      });
+    }
+
+    if (contrib.getAttribute("contrib-type") === "author") {
+      doc.nodes.document.authors.push(id);
+    }
+
+    doc.create(contribNode);
+    doc.show("info", contribNode.id);
+  };
+
+  this._getEqualContribs = function (state, contrib, contribId) {
+    var result = [];
+    var refs = state.xmlDoc.querySelectorAll("xref[rid="+contribId+"]");
+    // Find xrefs within contrib elements
+    _.each(refs, function(ref) {
+      var c = ref.parentNode;
+      if (c !== contrib) result.push(this.getName(c.querySelector("name")));
+    }, this);
+    return result;
+  };
+
+  this.extractContributorProperties = function(state, contrib, contribNode) {
+    var doc = state.doc;
+
+    // Extract equal contributors
+    var equalContribs = [];
+    var compInterests = [];
+
+    // extract affiliations stored as xrefs
+    var xrefs = contrib.querySelectorAll("xref");
+    _.each(xrefs, function(xref) {
+      if (xref.getAttribute("ref-type") === "aff") {
+        var affId = xref.getAttribute("rid");
+        var affNode = doc.getNodeBySourceId(affId);
+        if (affNode) {
+          contribNode.affiliations.push(affNode.id);
+          state.used[affId] = true;
         }
+      } else if (xref.getAttribute("ref-type") === "other") {
+        // FIXME: it seems *very* custom to interprete every 'other' that way
+        // TODO: try to find and document when this is applied
+        console.log("FIXME: please add documentation about using 'other' as indicator for extracting an awardGroup.");
 
-        // HACK: if author is assigned a conflict, remove the redundant
-        // conflict entry "The authors have no competing interests to declare"
-        // This is a data-modelling problem on the end of our input XML
-        // so we need to be smart about it in the converter
-        if (contribNode.competing_interests.length > 1) {
-            contribNode.competing_interests = _.filter(contribNode.competing_interests, function (confl) {
-                return confl.indexOf("no competing") < 0;
-            });
+        var awardGroup = state.xmlDoc.getElementById(xref.getAttribute("rid"));
+        if (!awardGroup) return;
+        var fundingSource = awardGroup.querySelector("funding-source");
+        if (!fundingSource) return;
+        var awardId = awardGroup.querySelector("award-id");
+        awardId = awardId ? ", "+awardId.textContent : "";
+        // Funding source nodes are looking like this
+        //
+        // <funding-source>
+        //   National Institutes of Health
+        //   <named-content content-type="funder-id">http://dx.doi.org/10.13039/100000002</named-content>
+        // </funding-source>
+        //
+        // and we only want to display the first text node, excluding the funder id
+        // or this
+        //
+        // They can also look like this
+        //
+        // <funding-source>
+        //   <institution-wrap>
+        //     <institution-id institution-id-type="FundRef">http://dx.doi.org/10.13039/100005156</institution-id>
+        //     <institution>Alexander von Humboldt-Stiftung</institution>
+        //   </institution-wrap>
+        // </funding-source>
+        // Then we take the institution element
+
+        var institution = fundingSource.querySelector('institution')
+        var fundingSourceName = institution ? institution.textContent : fundingSource.childNodes[0].textContent;
+        contribNode.fundings.push([fundingSourceName, awardId].join(''));
+      } else if (xref.getAttribute("ref-type") === "corresp") {
+        var correspId = xref.getAttribute("rid");
+        var corresp = state.xmlDoc.getElementById(correspId);
+        if (!corresp) return;
+        // TODO: a corresp element allows *much* more than just an email
+        // Thus, we are leaving this like untouched, so that it may be grabbed by extractAuthorNotes()
+        // state.used[correspId] = true;
+        var email = corresp.querySelector("email");
+        if (!email) return;
+        contribNode.emails.push(email.textContent);
+      } else if (xref.getAttribute("ref-type") === "fn") {
+        var fnId = xref.getAttribute("rid");
+        var fnElem = state.xmlDoc.getElementById(fnId);
+        var used = true;
+        if (fnElem) {
+          var fnType = fnElem.getAttribute("fn-type");
+          switch (fnType) {
+            case "con":
+              if (fnElem.getAttribute("id").indexOf("equal-contrib")>=0) {
+                equalContribs = this._getEqualContribs(state, contrib, fnElem.getAttribute("id"));
+              } else {
+                contribNode.contribution = fnElem.textContent;
+              }
+              break;
+            case "conflict":
+              compInterests.push(fnElem.textContent.trim());
+              break;
+            case "present-address":
+              contribNode.present_address = fnElem.querySelector("p").textContent;
+              break;
+            case "equal":
+              console.log("FIXME: isn't fnElem.getAttribute(id) === fnId?");
+              equalContribs = this._getEqualContribs(state, contrib, fnElem.getAttribute("id"));
+              break;
+            case "other":
+              // HACK: sometimes equal contribs are encoded as 'other' plus special id
+              console.log("FIXME: isn't fnElem.getAttribute(id) === fnId?");
+              if (fnElem.getAttribute("id").indexOf("equal-contrib")>=0) {
+                equalContribs = this._getEqualContribs(state, contrib, fnElem.getAttribute("id"));
+              } else {
+                used = false;
+              }
+              break;
+            default:
+              used = false;
+          }
+          if (used) state.used[fnId] = true;
         }
+      } else {
+        // TODO: this is a potential place for implementing a catch-bin
+        // For that, we could push the content of the referenced element into the contrib's catch-bin
+        console.log("Skipping contrib's xref", xref.textContent);
+      }
+    }, this);
 
-        if (contrib.getAttribute("contrib-type") === "author") {
-            doc.nodes.document.authors.push(id);
-        }
+    // Extract member list for person group
+    // eLife specific?
+    // ----------------
 
-        doc.create(contribNode);
-        doc.show("info", contribNode.id);
-    };
-
-    this._getEqualContribs = function (state, contrib, contribId) {
-        var result = [];
-        var refs = state.xmlDoc.querySelectorAll("xref[rid=" + contribId + "]");
-        // Find xrefs within contrib elements
-        _.each(refs, function (ref) {
-            var c = ref.parentNode;
-            if (c !== contrib) result.push(this.getName(c.querySelector("name")));
-        }, this);
-        return result;
-    };
-
-    this.extractContributorProperties = function (state, contrib, contribNode) {
-        var doc = state.doc;
-
-        // Extract equal contributors
-        var equalContribs = [];
-        var compInterests = [];
-
-        // extract affiliations stored as xrefs
-        var xrefs = contrib.querySelectorAll("xref");
-        _.each(xrefs, function (xref) {
-            if (xref.getAttribute("ref-type") === "aff") {
-                var affId = xref.getAttribute("rid");
-                var affNode = doc.getNodeBySourceId(affId);
-                if (affNode) {
-                    contribNode.affiliations.push(affNode.id);
-                    state.used[affId] = true;
-                }
-            } else if (xref.getAttribute("ref-type") === "other") {
-                // FIXME: it seems *very* custom to interprete every 'other' that way
-                // TODO: try to find and document when this is applied
-                console.log("FIXME: please add documentation about using 'other' as indicator for extracting an awardGroup.");
-
-                var awardGroup = state.xmlDoc.getElementById(xref.getAttribute("rid"));
-                if (!awardGroup) return;
-                var fundingSource = awardGroup.querySelector("funding-source");
-                if (!fundingSource) return;
-                var awardId = awardGroup.querySelector("award-id");
-                awardId = awardId ? ", " + awardId.textContent : "";
-                // Funding source nodes are looking like this
-                //
-                // <funding-source>
-                //   National Institutes of Health
-                //   <named-content content-type="funder-id">http://dx.doi.org/10.13039/100000002</named-content>
-                // </funding-source>
-                //
-                // and we only want to display the first text node, excluding the funder id
-                var fundingSourceName = fundingSource.childNodes[0].textContent;
-                contribNode.fundings.push([fundingSourceName, awardId].join(''));
-            } else if (xref.getAttribute("ref-type") === "corresp") {
-                var correspId = xref.getAttribute("rid");
-                var corresp = state.xmlDoc.getElementById(correspId);
-                if (!corresp) return;
-                // TODO: a corresp element allows *much* more than just an email
-                // Thus, we are leaving this like untouched, so that it may be grabbed by extractAuthorNotes()
-                // state.used[correspId] = true;
-                var email = corresp.querySelector("email");
-                if (!email) return;
-                contribNode.emails.push(email.textContent);
-            } else if (xref.getAttribute("ref-type") === "fn") {
-                var fnId = xref.getAttribute("rid");
-                var fnElem = state.xmlDoc.getElementById(fnId);
-                var used = true;
-                if (fnElem) {
-                    var fnType = fnElem.getAttribute("fn-type");
-                    switch (fnType) {
-                        case "con":
-                            contribNode.contribution = fnElem.textContent;
-                            break;
-                        case "conflict":
-                            compInterests.push(fnElem.textContent.trim());
-                            break;
-                        case "present-address":
-                            contribNode.present_address = fnElem.querySelector("p").textContent;
-                            break;
-                        case "equal":
-                            console.log("FIXME: isn't fnElem.getAttribute(id) === fnId?");
-                            equalContribs = this._getEqualContribs(state, contrib, fnElem.getAttribute("id"));
-                            break;
-                        case "other":
-                            // HACK: sometimes equal contribs are encoded as 'other' plus special id
-                            console.log("FIXME: isn't fnElem.getAttribute(id) === fnId?");
-                            if (fnElem.getAttribute("id").indexOf("equal-contrib") >= 0) {
-                                equalContribs = this._getEqualContribs(state, contrib, fnElem.getAttribute("id"));
-                            } else {
-                                used = false;
-                            }
-                            break;
-                        default:
-                            used = false;
-                    }
-                    if (used) state.used[fnId] = true;
-                }
-            } else {
-                // TODO: this is a potential place for implementing a catch-bin
-                // For that, we could push the content of the referenced element into the contrib's catch-bin
-                console.log("Skipping contrib's xref", xref.textContent);
-            }
-        }, this);
-
-        // Extract member list for person group
-        // eLife specific?
-        // ----------------
-
-        if (compInterests.length > 1) {
-            compInterests = _.filter(compInterests, function (confl) {
-                return confl.indexOf("no competing") < 0;
-            });
-        }
+    if (compInterests.length > 1) {
+      compInterests = _.filter(compInterests, function(confl) {
+        return confl.indexOf("no competing") < 0;
+      });
+    }
 
         contribNode.competing_interests = compInterests;
         var memberList = contrib.querySelector("xref[ref-type=other]");

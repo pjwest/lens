@@ -135,9 +135,9 @@ ElifeConverter.Prototype = function() {
       } else if (!(url.match(/\.gif$/g))) {
         url = url+'.jpg'
       }
-      
+
       return [
-        "http://publishing-cdn.elifesciences.org/",
+        "https://cdn.elifesciences.org/articles/",
         state.doc.id,
         "/",
         url
@@ -151,7 +151,7 @@ ElifeConverter.Prototype = function() {
       return [baseURL, node.url].join('');
     } else {
       node.url = [
-        "http://publishing-cdn.elifesciences.org/",
+        "https://cdn.elifesciences.org/articles/",
         state.doc.id,
         "/",
         node.url
@@ -219,13 +219,13 @@ ElifeConverter.Prototype = function() {
 
     if (pdfURI) {
       var pdfLink = [
-        "http://publishing-cdn.elifesciences.org/",
+        "https://cdn.elifesciences.org/articles/",
         state.doc.id,
         "/",
         pdfURI ? pdfURI.getAttribute("xlink:href") : "#"
       ].join('');
     }
-    
+
     // Version number from the PDF href, default to 1
     var match = null;
     if (pdfURI) {
@@ -247,7 +247,7 @@ ElifeConverter.Prototype = function() {
     }
 
     links.push({
-      url: "https://s3.amazonaws.com/elife-publishing-cdn/"+state.doc.id+"/elife-"+state.doc.id+"-v"+version+".xml",
+      url: "https://cdn.elifesciences.org/articles/"+state.doc.id+"/elife-"+state.doc.id+"-v"+version+".xml",
       name: "Source XML",
       type: "xml"
     });
@@ -266,6 +266,9 @@ ElifeConverter.Prototype = function() {
     publicationInfo.article_type = articleType ? articleType.textContent : "";
     publicationInfo.links = links;
 
+    publicationInfo.subject_link = 'https://elifesciences.org/category'
+    publicationInfo.article_type_link = 'https://elifesciences.org/category'
+
     if (publicationInfo.related_article) publicationInfo.related_article = "http://dx.doi.org/" + publicationInfo.related_article;
   };
 
@@ -275,7 +278,7 @@ ElifeConverter.Prototype = function() {
       return [baseURL, node.url].join('');
     } else {
       node.url = [
-        "http://publishing-cdn.elifesciences.org/",
+        "https://cdn.elifesciences.org/articles/",
         state.doc.id,
         "/",
         node.url
@@ -283,16 +286,65 @@ ElifeConverter.Prototype = function() {
     }
   };
 
+  this.enhanceTable = function(state, tableNode, tableWrap) {
+    this.mapCitations(state);
+    tableNode.content = this.enhanceHTML(tableNode.content);
+  }
+
+  this.mapCitations = function (state)
+  {
+    // Map citation id to their citation reference for use in HTML replacements
+    this.citationCitationReferenceMap = [];
+    var citationSourceIdMap = [];
+    var doc = state.doc;
+    _.each(doc.nodes, function(node) {
+      if(node.type == "citation")
+      {
+        citationSourceIdMap[node.source_id] = node.id;
+      }
+    }.bind(this));
+    var annotations = state.annotations;
+    _.each(annotations, function(anno) {
+      if(anno.type == "citation_reference")
+      {
+        this.citationCitationReferenceMap[anno.target] = anno.id;
+      }
+    }.bind(this));
+  }
+
+  this.enhanceHTML = function(html) {
+    html = html.replace(/<(\/)?bold>/g, "<$1strong>");
+    html = html.replace(/<(\/)?italic>/g, "<$1em>");
+    // Table colours
+    html = html.replace(/<td style=\"([^"]+)\"([^>]*)>/g, "<td class=\"$1\"$2>");
+    // named-content span
+    html = html.replace(/<named-content content-type="([^"]+)"([^>]*)>([^<]*)<\/named-content>/g, "<span class=\"$1\"$2>$3</span>");
+    // Hacky way to convert references inside tables
+    if(this.citationCitationReferenceMap)
+    {
+      var xref_pattern = /<xref ref-type="bibr" rid="([^"]+)">([^<]*)<\/xref>/g;
+      var matches = html.match(xref_pattern);
+      _.each(matches, function(match) {
+        var rid = match.replace(xref_pattern, "$1");
+        var content = match.replace(xref_pattern, "$2");
+        var citation_reference = this.citationCitationReferenceMap[rid];
+        var replace_tag = '<a href="" data-id="' + citation_reference + '" class="annotation citation_reference resource-reference">'+content+'</a>';
+        html = html.replace(match, replace_tag);
+      }.bind(this));
+    }
+    return html;
+  };
+
   this.enhanceVideo = function(state, node, element) {
     var href = element.getAttribute("xlink:href").split(".");
     var name = href[0];
-    node.url = "http://api.elifesciences.org/v2/articles/"+state.doc.id+"/media/file/"+name+".mp4";
-    node.url_ogv = "http://api.elifesciences.org/v2/articles/"+state.doc.id+"/media/file//"+name+".ogv";
-    node.url_webm = "http://api.elifesciences.org/v2/articles/"+state.doc.id+"/media/file//"+name+".webm";
-    node.poster = "http://api.elifesciences.org/v2/articles/"+state.doc.id+"/media/file/"+name+".jpg";
+    node.url = "https://legacy--api.elifesciences.org/v2/articles/"+state.doc.id+"/media/file/"+name+".mp4";
+    node.url_ogv = "https://legacy--api.elifesciences.org/v2/articles/"+state.doc.id+"/media/file//"+name+".ogv";
+    node.url_webm = "https://legacy--api.elifesciences.org/v2/articles/"+state.doc.id+"/media/file//"+name+".webm";
+    node.poster = "https://legacy--api.elifesciences.org/v2/articles/"+state.doc.id+"/media/file/"+name+".jpg";
   };
 
-  // Example url to JPG: http://cdn.elifesciences.org/elife-articles/00768/svg/elife00768f001.jpg
+  // Example url to JPG: https://cdn.elifesciences.org/elife-articles/00768/svg/elife00768f001.jpg
   this.resolveURL = function(state, url) {
     // Use absolute URL
     if (url.match(/http:\/\//)) return url;
@@ -304,16 +356,16 @@ ElifeConverter.Prototype = function() {
       return [baseURL, url].join('');
     } else {
       // Use special URL resolving for production articles
-      
+
       // File extension support
       if (url.match(/\.tif$/g)) {
         url = url.replace(/\.tif$/g, '.jpg')
       } else if (!(url.match(/\.gif$/g))) {
         url = url+'.jpg'
       }
-      
+
       return [
-        "http://publishing-cdn.elifesciences.org/",
+        "https://cdn.elifesciences.org/articles/",
         state.doc.id,
         "/",
         url
@@ -334,15 +386,29 @@ ElifeConverter.Prototype = function() {
     }
   };
 
+  this.back = function(state, back) {
+    var appGroups = back.querySelectorAll('app-group');
+
+    if (appGroups && appGroups.length > 0) {
+      _.each(appGroups, function(appGroup) {
+        this.appGroup(state, appGroup);
+      }.bind(this));
+    }
+  };
+
   this.showNode = function(state, node) {
     switch(node.type) {
     // Boxes go into the figures view if these conditions are met
     // 1. box has a label (e.g. elife 00288)
+    // Disable it July 2017: cross reference links do not work if box reference
+    //  in the content panel tries to link to the figures panel
+    /*
     case "box":
       if (node.label) {
         state.doc.show("figures", node.id);
       }
       break;
+    */
     default:
       __super__.showNode.apply(this, arguments);
     }
