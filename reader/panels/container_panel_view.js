@@ -4,7 +4,7 @@ var _ = require("underscore");
 var Scrollbar = require("./surface_scrollbar");
 var Surface = require("../lens_surface");
 var PanelView = require("./panel_view");
-var getRelativeBoundingRect = require('../substance/util/getRelativeBoundingRect');
+var getRelativeBoundingRect = require('../../substance/util/getRelativeBoundingRect');
 
 // TODO: try to get rid of DocumentController and use the Container node instead
 var ContainerPanelView = function( panelCtrl, viewFactory, config ) {
