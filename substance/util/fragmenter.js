@@ -190,9 +190,7 @@ Fragmenter.Prototype = function() {
     }
 
     // Finally append a trailing text node
-    if (!(text===undefined)) {
-      this.createText(rootContext, text.substring(pos));
-    }
+    this.createText(rootContext, text.substring(pos));
   };
 
 };
