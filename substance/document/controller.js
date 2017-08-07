@@ -36,7 +36,7 @@ Controller.Prototype = function() {
   };
 
   this.getContainer = function() {
-     return this.container;
+    return this.container;
   };
 
   // Given a node id, get position in the document
