@@ -2286,8 +2286,7 @@ NlmToLensConverter.Prototype = function() {
     } else {
       // HACK: We treat <back> element as app-group, sine there
       // are docs that wrongly put <app> elements into the back
-      // element
-    directly.
+      // element    directly.
       this.appGroup(state, back);
     }
   };
