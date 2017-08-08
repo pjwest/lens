@@ -1689,8 +1689,7 @@ NlmToLensConverter.Prototype = function() {
         // worse to break automatically on unknown inline tags,
         // than to render plain text, as it results in data loss.
         // If you find a situation where you want to flatten structure
-        // found within a paragraph, use this.
-        acceptedParagraphElements instead
+        // found within a paragraph, use this.acceptedParagraphElements instead
         // which is used in a preparation step before converting paragraphs.
         var annotatedText = this._annotatedText(state, iterator.back(), { offset: 0, breakOnUnknown: false });
 
