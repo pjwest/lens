@@ -1596,8 +1596,7 @@ NlmToLensConverter.Prototype = function() {
       // ignore some elements
       if (this.ignoredParagraphElements[type]) continue;
 
-      // paragraph block-types
-      such as disp-formula
+      // paragraph block-types such as disp-formula
       // i.e they are allowed within a paragraph, but
       // we pull them out on the top level
       if (this.acceptedParagraphElements[type]) {
