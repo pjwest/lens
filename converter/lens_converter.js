@@ -1007,8 +1007,7 @@ NlmToLensConverter.Prototype = function() {
     // catch all unhandled foot-notes
     this.extractFootNotes(state, article);
 
-        //Extract back
-        element, if it exists
+        //Extract back  element, if it exists
     var back = article.querySelector("back");
     if (back){
         this.back(state, back);
