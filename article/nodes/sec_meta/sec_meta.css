@@ -1,0 +1,38 @@
+/*
+sec-meta
+--------------------------------------- */
+
+.content-node.sec-meta > .content {
+  padding: 20px;
+}
+
+.surface.content .content-node.sec-meta {
+  /*margin-left: 60px;*/
+/*  padding-left: 100px;
+  padding-right: 60px;*/
+
+  /*padding: 0px;*/
+  /*background: #ccc;*/
+}
+
+.document .content-node.sec-meta .content-node.paragraph {
+  /*padding: 0px;*/
+  /*padding: 20px 60px 20px 100px;*/
+}
+
+.surface.content .content-node.sec-meta {
+  /*background: #ccc;*/
+}
+
+.surface.content .content-node.sec-meta > .content {
+  border: 1px dotted #ddd;
+}
+
+.surface.content .content-node.sec-meta .content {
+  background: #fbfbfb;
+}
+
+.surface.content .content-node.sec-meta > .content > .label  {
+  font-weight: 600;
+  padding-bottom: 20px;
+}

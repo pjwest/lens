@@ -457,6 +457,7 @@ NlmToLensConverter.Prototype = function() {
                     "content": ""
                 };
                 header.content = this.annotatedText(state, metaNameEl, [header.id, 'content']);
+
                 doc.create(header);
                 var bodyNodes = this.paragraphGroup(state, metaValueEl);
 
@@ -532,6 +533,7 @@ NlmToLensConverter.Prototype = function() {
             authors: [], // docNode.authors,
             abstract: docNode.abstract
         };
+
 
         // Create authors paragraph that has contributor_reference annotations
         // to activate the author cards
@@ -946,6 +948,9 @@ NlmToLensConverter.Prototype = function() {
         // Extract ArticleMeta
         this.extractArticleMeta(state, article);
 
+
+
+
         // Populate Publication Info node
         this.extractPublicationInfo(state, article);
 
@@ -962,6 +967,7 @@ NlmToLensConverter.Prototype = function() {
 
         //Extact Footnotes
         this.extractFootnotes(state, article);
+
 
 
     };
@@ -988,6 +994,14 @@ NlmToLensConverter.Prototype = function() {
         });
     };
 
+
+    // Section Metadata
+    this.extractSectionMeta = function (state, secMeta){
+        var abstracts = this.abstract(state, secMeta);
+
+
+    }
+
     // #### Front.ArticleMeta
     //
 
@@ -1010,8 +1024,8 @@ NlmToLensConverter.Prototype = function() {
         // <pub-date> Publication Date, zero or more
         var pubDates = articleMeta.querySelectorAll("pub-date");
         this.pubDates(state, pubDates);
-        //TODO removed abstract
         this.abstracts(state, articleMeta);
+
 
         // Not supported yet:
         // <trans-abstract> Translated Abstract, zero or more
@@ -1147,6 +1161,7 @@ NlmToLensConverter.Prototype = function() {
     this.abstracts = function (state, articleMeta) {
         // <abstract> Abstract, zero or more
         var abstracts = articleMeta.querySelectorAll("abstract");
+        console.log(abstracts);
         _.each(abstracts, function (abs) {
             this.abstract(state, abs);
         }, this);
@@ -1157,27 +1172,40 @@ NlmToLensConverter.Prototype = function() {
         var nodes = [];
 
         var title = abs.querySelector("title");
-
+        //TODO heading  has  level 10
         var heading = {
             id: state.nextId("heading"),
             type: "heading",
-            level: 1,
+            level: 10,
             content: title ? title.textContent : "Abstract"
         };
 
-        doc.create(heading);
-        nodes.push(heading);
+        var pars = abs.querySelectorAll("p");
+        console.log("pars",pars);
+
+        var content = this.bodyNodes(state,pars);
+        console.log("content", content);
+
+        //doc.create(heading);
+        // TODO diabled heading for abstract
+        //nodes.push(heading);
 
         // with eLife there are abstracts having an object-id.
         // TODO: we should store that in the model instead of dropping it
-
+        /**
         nodes = nodes.concat(this.bodyNodes(state, util.dom.getChildren(abs), {
             ignore: ["title", "object-id"]
         }));
 
+
         if (nodes.length > 0) {
             this.show(state, nodes);
         }
+         **/
+        return {
+            heading: heading,
+            text: content
+        };
     };
 
     // ### Article.Body
@@ -1205,7 +1233,8 @@ NlmToLensConverter.Prototype = function() {
         // figures and table-wraps are treated globally
         "fig": true,
        "table": true,
-        "speaker":true
+       "speaker":true
+
     };
 
     // Top-level elements as they can be found in the body or
@@ -1280,6 +1309,26 @@ NlmToLensConverter.Prototype = function() {
     };
     this._bodyNodes["table-wrap"] = function (state, child) {
         return this.tableWrap(state, child);
+    };
+    this._bodyNodes["sec-meta"] = function (state, child) {
+        return  this.secMeta(state, child);
+    };
+
+    this.secMeta = function (state, secMeta) {
+        var doc  = state.doc;
+        var childNodes = this.bodyNodes(state, util.dom.getChildren(secMeta));
+        var secMetaId = state.nextId("sec_meta");
+        var secNode = {
+            "type": "sec_meta",
+            "id": secMetaId,
+            "source_id": secMeta.getAttribute("id"),
+            "label": "",
+            "children": _.pluck(childNodes, 'id'),
+            "abstract": this.abstract(state,secMeta)
+        };
+        doc.create(secNode);
+        console.log(secNode);
+        return secNode;
     };
 
     // Overwirte in specific converter
@@ -1458,13 +1507,30 @@ NlmToLensConverter.Prototype = function() {
 
     // create a heading
     var title = this.selectDirectChildren(section, 'title')[0];
+
+
     if (!title) {
       console.error("FIXME: every section should have a title", this.toHtml(section));
     }
+    //create section metadata
 
-    // Recursive Descent: get all section body nodes
+    var secMeta = this.selectDirectChildren(section,'sec-meta')[0];
+      /**
+      <sec-meta>
+        <abstract>
+            <title>abstract title</title>
+            <p>P</p>
+       </abstract>
+      <sec-meta>
+
+       **/
+
+
+
+
+      // Recursive Descent: get all section body nodes
     nodes = nodes.concat(this.bodyNodes(state, children, {
-      ignore: ["title", "label"]
+      ignore: ["title", "label","sec-meta"]
     }));
 
     if (nodes.length > 0 && title) {
@@ -1480,7 +1546,7 @@ NlmToLensConverter.Prototype = function() {
       if (label) {
         heading.label = label.textContent;
       }
-
+        //console.log("header", heading);
       if (heading.content.length > 0) {
         doc.create(heading);
         nodes.unshift(heading);
@@ -1510,8 +1576,7 @@ NlmToLensConverter.Prototype = function() {
     "list": { handler: "list" },
     "disp-formula": { handler: "formula" },
     "speech": { handler: "speechText" },
-    "table-wrap": { handler: "tableWrap" },
-
+    "table-wrap": { handler: "tableWrap" }
   };
 
   this.inlineParagraphElements = {

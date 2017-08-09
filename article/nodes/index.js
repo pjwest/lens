@@ -52,5 +52,6 @@ module.exports = {
   "footnote": require("./footnote"),
   "quote": require("./quote"),
   "speech": require("./speech"),
-  "strike": require("./strike")
+  "strike": require("./strike"),
+  "sec_meta": require("./sec_meta")
 };
