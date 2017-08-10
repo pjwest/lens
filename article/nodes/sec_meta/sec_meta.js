@@ -19,15 +19,12 @@ secMeta.type = {
   "id": "sec_meta",
   "parent": "content",
   "properties": {
-    "source_id": "string",
-    "label": "string",
-    "children": ["array", "paragraph"],
-    "abstract":{
-      "head":  ["array", "paragraph"],
-        "text": ["array", "paragraph"]
+      "children":{
+        "abstract":"abstract"
+      }
     }
 
-  }
+
 };
 
 // This is used for the auto-generated docs
@@ -35,26 +32,28 @@ secMeta.type = {
 //
 
 secMeta.description = {
-  "name": "Box",
+  "name": "Section",
   "remarks": [
-    "A box type.",
+    "Sectin Element for metadata",
   ],
   "properties": {
-    "label": "string",
-    "children": "0..n Paragraph nodes",
+    "children": {
+      "abstract": "abstract element"
+    }
   }
 };
 
 
-// Example Box
+// Example Section Metadata
 // -----------------
 //
 
 secMeta.example = {
-  "id": "box_1",
-  "type": "box",
-  "label": "Box 1",
-  "children": ["paragraph_1", "paragraph_2"]
+  "id": "sec_meta_1",
+  "type": "sec_meta",
+
+  "children": {
+      "abstract":"abstract_id"}
 };
 
 secMeta.Prototype = function() {

@@ -877,6 +877,7 @@ NlmToLensConverter.Prototype = function() {
         _.each(doc.containers, function (container) {
             container.rebuild();
         });
+        console.log("doc", doc);
         return doc;
     };
 
@@ -970,6 +971,7 @@ NlmToLensConverter.Prototype = function() {
 
 
 
+
     };
 
     this.extractDefinitions = function (state /*, article*/) {
@@ -995,12 +997,6 @@ NlmToLensConverter.Prototype = function() {
     };
 
 
-    // Section Metadata
-    this.extractSectionMeta = function (state, secMeta){
-        var abstracts = this.abstract(state, secMeta);
-
-
-    }
 
     // #### Front.ArticleMeta
     //
@@ -1163,29 +1159,42 @@ NlmToLensConverter.Prototype = function() {
         var abstracts = articleMeta.querySelectorAll("abstract");
         console.log(abstracts);
         _.each(abstracts, function (abs) {
-            this.abstract(state, abs);
+            this._abstract(state, abs);
         }, this);
     };
 
-    this.abstract = function (state, abs) {
+    this._abstract = function (state, abs) {
         var doc = state.doc;
-        var nodes = [];
-
+        var abstractNode = {
+            id : state.nextId("abstract"),
+            type:"abstract",
+            label:"",
+            title:"",
+            children:[]
+        }
+        // Get Abstract title
         var title = abs.querySelector("title");
-        //TODO heading  has  level 10
-        var heading = {
-            id: state.nextId("heading"),
-            type: "heading",
-            level: 10,
-            content: title ? title.textContent : "Abstract"
-        };
+        if (title){
+            var node = this.paragraph(state, abs);
+            if (node) {
+                abstractNode.title = node.id;
+            }
+        }
 
-        var pars = abs.querySelectorAll("p");
-        console.log("pars",pars);
+        var children = [];
+        var paragraphs = abs.querySelectorAll("p");
+        _.each(paragraphs, function(p) {
 
-        var content = this.bodyNodes(state,pars);
-        console.log("content", content);
-
+            //console.log("p.parentNode",p.parentNode);
+            if (p.parentNode !== abs) return;
+                var node = this.paragraph(state,p);
+            if (node) children.push(node.id);
+                },this);
+        //console.log("children",children);
+        abstractNode.children = children;
+        doc.create(abstractNode);
+        //console.log("abstractNode  -->>" , abstractNode);
+        return abstractNode;
         //doc.create(heading);
         // TODO diabled heading for abstract
         //nodes.push(heading);
@@ -1202,10 +1211,7 @@ NlmToLensConverter.Prototype = function() {
             this.show(state, nodes);
         }
          **/
-        return {
-            heading: heading,
-            text: content
-        };
+
     };
 
     // ### Article.Body
@@ -1313,22 +1319,21 @@ NlmToLensConverter.Prototype = function() {
     this._bodyNodes["sec-meta"] = function (state, child) {
         return  this.secMeta(state, child);
     };
+    this._bodyNodes["abstract"] = function (state, child) {
+        return  this._abstract(state, child);
+    };
 
     this.secMeta = function (state, secMeta) {
         var doc  = state.doc;
         var childNodes = this.bodyNodes(state, util.dom.getChildren(secMeta));
-        var secMetaId = state.nextId("sec_meta");
+        var secMetaID = state.nextId("sec_meta");
         var secNode = {
+            "id": secMetaID,
             "type": "sec_meta",
-            "id": secMetaId,
-            "source_id": secMeta.getAttribute("id"),
-            "label": "",
-            "children": _.pluck(childNodes, 'id'),
-            "abstract": this.abstract(state,secMeta)
+            "children": _.pluck(childNodes, 'id')
         };
         doc.create(secNode);
-        console.log(secNode);
-        return secNode;
+        return secNode ;
     };
 
     // Overwirte in specific converter
@@ -1514,7 +1519,7 @@ NlmToLensConverter.Prototype = function() {
     }
     //create section metadata
 
-    var secMeta = this.selectDirectChildren(section,'sec-meta')[0];
+    //var secMeta = this.selectDirectChildren(section,'sec-meta')[0];
       /**
       <sec-meta>
         <abstract>

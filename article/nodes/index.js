@@ -29,6 +29,7 @@ module.exports = {
   "link": require("./link"),
   "inline_image": require("./inline_image"),
   /* Content types */
+  "abstract": require("./abstract"),
   "document": require("./document"),
   "text": require("./text"),
   "paragraph": require("./paragraph"),

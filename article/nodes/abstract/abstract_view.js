@@ -7,18 +7,19 @@ var $$ = require("../../../substance/application").$$;
 // Lens.SecMeta.View
 // ==========================================================================
 
-var secMetaView = function (node, viewFactory) {
+var abstractView = function (node, viewFactory) {
     CompositeView.call(this, node, viewFactory);
 };
 
-secMetaView.Prototype = function () {
+abstractView.Prototype = function () {
     this.render = function () {
-        console.log("view",this.node);
+        console.log("abstract view",this.node);
         return this;
     };
 };
 
-secMetaView.Prototype.prototype = CompositeView.prototype;
-secMetaView.prototype = new secMetaView.Prototype();
+abstractView.Prototype.prototype = CompositeView.prototype;
+abstractView.prototype = new abstractView.Prototype();
 
-module.exports = secMetaView;
+module.exports = abstractView;
+
