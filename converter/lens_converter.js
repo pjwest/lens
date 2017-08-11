@@ -526,12 +526,15 @@ NlmToLensConverter.Prototype = function() {
     this.extractCover = function (state, article) {
         var doc = state.doc;
         var docNode = doc.get("document");
+        var articleMeta = article.querySelector("article-meta");
+        var abstract = this._abstract(state, articleMeta);
+
         var cover = {
             id: "cover",
             type: "cover",
             title: docNode.title,
             authors: [], // docNode.authors,
-            abstract: docNode.abstract
+            abstract: abstract.id
         };
 
 
@@ -877,7 +880,6 @@ NlmToLensConverter.Prototype = function() {
         _.each(doc.containers, function (container) {
             container.rebuild();
         });
-        console.log("doc", doc);
         return doc;
     };
 
@@ -1020,7 +1022,7 @@ NlmToLensConverter.Prototype = function() {
         // <pub-date> Publication Date, zero or more
         var pubDates = articleMeta.querySelectorAll("pub-date");
         this.pubDates(state, pubDates);
-        this.abstracts(state, articleMeta);
+        //this.abstracts(state, articleMeta);
 
 
         // Not supported yet:
@@ -1157,7 +1159,6 @@ NlmToLensConverter.Prototype = function() {
     this.abstracts = function (state, articleMeta) {
         // <abstract> Abstract, zero or more
         var abstracts = articleMeta.querySelectorAll("abstract");
-        console.log(abstracts);
         _.each(abstracts, function (abs) {
             this._abstract(state, abs);
         }, this);
@@ -1174,43 +1175,47 @@ NlmToLensConverter.Prototype = function() {
         }
         // Get Abstract title
         var title = abs.querySelector("title");
-        if (title){
-            var node = this.paragraph(state, abs);
-            if (node) {
-                abstractNode.title = node.id;
+        var iterator = new util.dom.ChildNodeIterator(title);
+        while (iterator.hasNext()) {
+            var child = iterator.next();
+            var type = util.dom.getNodeType(child);
+
+            // annotated text node
+            if (type === "text" || this.isAnnotation(type)) {
+                var textNode = {
+                    id: state.nextId("text"),
+                    type: "text",
+                    content: null
+                };
             }
         }
+        // pushing information to the stack so that annotations can be created appropriately
+        state.stack.push({
+            path: [textNode.id, "content"]
+        });
+
+        var annotatedText = this._annotatedText(state, iterator.back(), { offset: 0, breakOnUnknown: true });
+
+        // Ignore empty paragraphs
+        if (annotatedText.length > 0) {
+            textNode.content = annotatedText;
+            doc.create(textNode);
+            //nodes.push(textNode);
+        }
+        abstractNode.title = textNode.id;
 
         var children = [];
         var paragraphs = abs.querySelectorAll("p");
         _.each(paragraphs, function(p) {
-
-            //console.log("p.parentNode",p.parentNode);
-            if (p.parentNode !== abs) return;
+           
+            //if (p.parentNode !== abs) return;
                 var node = this.paragraph(state,p);
             if (node) children.push(node.id);
                 },this);
-        //console.log("children",children);
         abstractNode.children = children;
+
         doc.create(abstractNode);
-        //console.log("abstractNode  -->>" , abstractNode);
         return abstractNode;
-        //doc.create(heading);
-        // TODO diabled heading for abstract
-        //nodes.push(heading);
-
-        // with eLife there are abstracts having an object-id.
-        // TODO: we should store that in the model instead of dropping it
-        /**
-        nodes = nodes.concat(this.bodyNodes(state, util.dom.getChildren(abs), {
-            ignore: ["title", "object-id"]
-        }));
-
-
-        if (nodes.length > 0) {
-            this.show(state, nodes);
-        }
-         **/
 
     };
 
@@ -1517,23 +1522,7 @@ NlmToLensConverter.Prototype = function() {
     if (!title) {
       console.error("FIXME: every section should have a title", this.toHtml(section));
     }
-    //create section metadata
-
-    //var secMeta = this.selectDirectChildren(section,'sec-meta')[0];
-      /**
-      <sec-meta>
-        <abstract>
-            <title>abstract title</title>
-            <p>P</p>
-       </abstract>
-      <sec-meta>
-
-       **/
-
-
-
-
-      // Recursive Descent: get all section body nodes
+     // Recursive Descent: get all section body nodes
     nodes = nodes.concat(this.bodyNodes(state, children, {
       ignore: ["title", "label","sec-meta"]
     }));
@@ -1551,7 +1540,6 @@ NlmToLensConverter.Prototype = function() {
       if (label) {
         heading.label = label.textContent;
       }
-        //console.log("header", heading);
       if (heading.content.length > 0) {
         doc.create(heading);
         nodes.unshift(heading);

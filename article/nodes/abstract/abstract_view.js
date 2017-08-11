@@ -4,7 +4,7 @@ var NodeView = require('../node').View;
 var CompositeView = require("../composite").View;
 var $$ = require("../../../substance/application").$$;
 
-// Lens.SecMeta.View
+// Lens.abstract.View
 // ==========================================================================
 
 var abstractView = function (node, viewFactory) {
@@ -12,8 +12,17 @@ var abstractView = function (node, viewFactory) {
 };
 
 abstractView.Prototype = function () {
+
     this.render = function () {
-        console.log("abstract view",this.node);
+        NodeView.prototype.render.call(this);
+        this.content = document.createElement("div");
+        var title = this.node.title;
+        var childView = this.createChildView(title);
+        var childViewEl = childView.render().el;
+        this.content.appendChild(childViewEl);
+
+        this.renderChildren();
+        this.el.appendChild(this.content);
         return this;
     };
 };

@@ -13,7 +13,9 @@ var secMetaView = function (node, viewFactory) {
 
 secMetaView.Prototype = function () {
     this.render = function () {
-        console.log("view",this.node);
+        this.content = document.createElement("div");
+        this.renderChildren();
+        this.el.appendChild(this.content);
         return this;
     };
 };

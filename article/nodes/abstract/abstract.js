@@ -19,7 +19,7 @@ Abstract.type = {
     "id": "abstract",
     "parent": "content",
     "properties": {
-        "title":"string",
+        "title":"text",
         "children": ["array", "paragraph"]
     }
 

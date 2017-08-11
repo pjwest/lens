@@ -19,7 +19,8 @@ Cover.type = {
   "properties": {
     "source_id": "string",
     "authors": ["array", "paragraph"],
-    "breadcrumbs": "object"
+    "breadcrumbs": "object",
+    "abstract": "object"
     // No properties as they are all derived from the document node
   }
 };
@@ -59,6 +60,9 @@ Cover.Prototype = function() {
   this.getTitle = function() {
     return this.document.title;
   };
+  this.getAbstract = function () {
+      return this.document.get(this.properties.abstract);
+  }
 
 };
 
