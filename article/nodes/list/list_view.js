@@ -2,6 +2,7 @@
 
 var CompositeView = require("../composite/composite_view");
 var List = require("./list");
+var _ = require("underscore");
 
 // Substance.Image.View
 // ==========================================================================
@@ -21,10 +22,7 @@ ListView.Prototype = function () {
 
     this.render = function () {
         this.el.innerHTML = "";
-        console.log("this.node", this.node);
-
         var list_ordered = (this.node.ordered) ? "OL" : "UL";
-
         this.content = document.createElement(list_ordered);
         this.content.classList.add("content");
 
@@ -37,27 +35,32 @@ ListView.Prototype = function () {
 
         // dispose existing children views if called multiple times
         for (i = 0; i < this.childrenViews.length; i++) {
-            console.log ("dispose, childrenViews", this.childrenViews[i]);
             this.childrenViews[i].dispose();
         }
 
         // create children views
         var children = this.node.getNodes();
+        var item_ids = this.node.properties.item_ids;
+
+
+        var lst_id = 0;
         for (i = 0; i < children.length; i++) {
             var child = this.node.document.get(children[i]);
             var childView = this.viewFactory.createView(child);
 
-            var listEl;
+            var listEl ;
 
             if (child instanceof List) {
-                console.log("child list", child);
                 listEl = childView.render().el;
             } else {
-                listEl = document.createElement("LI");
+                if (lst_id != item_ids[i] | lst_id ==0 ) {
+                    listEl = document.createElement("LI");
+                }
                 listEl.appendChild(childView.render().el);
             }
             this.content.appendChild(listEl);
             this.childrenViews.push(childView);
+            lst_id = item_ids[i];
         }
 
         this.el.appendChild(this.content);

@@ -143,9 +143,11 @@ CoverView.Prototype = function() {
         }));
       }
     }
-    var absView = this.viewFactory.createView(node.getAbstract());
-    var absViewEL = absView.render().el;
-    this.content.appendChild(absViewEL);
+    if (node.getAbstract()) {
+        var absView = this.viewFactory.createView(node.getAbstract());
+        var absViewEL = absView.render().el;
+        this.content.appendChild(absViewEL);
+    }
 
 
       return this;

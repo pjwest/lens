@@ -528,13 +528,17 @@ NlmToLensConverter.Prototype = function () {
         var docNode = doc.get("document");
         var articleMeta = article.querySelector("article-meta");
         var abstract = this._abstract(state, articleMeta);
+        var a_id ='';
+        if (abstract !== undefined) {
+            a_id = abstract.id
+        }
 
         var cover = {
             id: "cover",
             type: "cover",
             title: docNode.title,
             authors: [], // docNode.authors,
-            abstract: abstract.id
+            abstract: a_id
         };
 
 
@@ -1156,57 +1160,61 @@ NlmToLensConverter.Prototype = function () {
     };
 
     this._abstract = function (state, abs) {
-        var doc = state.doc;
-        var abstractNode = {
-            id: state.nextId("abstract"),
-            type: "abstract",
-            label: "",
-            title: "",
-            children: []
-        }
-        // Get Abstract title
         var title = abs.querySelector("title");
-        var iterator = new util.dom.ChildNodeIterator(title);
-        while (iterator.hasNext()) {
-            var child = iterator.next();
-            var type = util.dom.getNodeType(child);
-
-            // annotated text node
-            if (type === "text" || this.isAnnotation(type)) {
-                var textNode = {
-                    id: state.nextId("text"),
-                    type: "text",
-                    content: null
-                };
+        if (title !== null) {
+            var doc = state.doc;
+            var abstractNode = {
+                id: state.nextId("abstract"),
+                type: "abstract",
+                label: "",
+                title: "",
+                children: []
             }
+            // Get Abstract title
+
+            var iterator = new util.dom.ChildNodeIterator(title);
+            while (iterator.hasNext()) {
+                var child = iterator.next();
+                var type = util.dom.getNodeType(child);
+
+                // annotated text node
+                if (type === "text" || this.isAnnotation(type)) {
+                    var textNode = {
+                        id: state.nextId("text"),
+                        type: "text",
+                        content: null
+                    };
+                }
+            }
+            // pushing information to the stack so that annotations can be created appropriately
+            state.stack.push({
+                path: [textNode.id, "content"]
+            });
+
+            var annotatedText = this._annotatedText(state, iterator.back(), {offset: 0, breakOnUnknown: true});
+
+            // Ignore empty paragraphs
+            if (annotatedText.length > 0) {
+                textNode.content = annotatedText;
+                doc.create(textNode);
+                //nodes.push(textNode);
+            }
+            abstractNode.title = textNode.id;
+
+            var children = [];
+            var paragraphs = abs.querySelectorAll("p");
+            _.each(paragraphs, function (p) {
+
+                //if (p.parentNode !== abs) return;
+                var node = this.paragraph(state, p);
+                if (node) children.push(node.id);
+            }, this);
+            abstractNode.children = children;
+            doc.create(abstractNode);
+            return abstractNode;
         }
-        // pushing information to the stack so that annotations can be created appropriately
-        state.stack.push({
-            path: [textNode.id, "content"]
-        });
-
-        var annotatedText = this._annotatedText(state, iterator.back(), {offset: 0, breakOnUnknown: true});
-
-        // Ignore empty paragraphs
-        if (annotatedText.length > 0) {
-            textNode.content = annotatedText;
-            doc.create(textNode);
-            //nodes.push(textNode);
-        }
-        abstractNode.title = textNode.id;
-
-        var children = [];
-        var paragraphs = abs.querySelectorAll("p");
-        _.each(paragraphs, function (p) {
-
-            //if (p.parentNode !== abs) return;
-            var node = this.paragraph(state, p);
-            if (node) children.push(node.id);
-        }, this);
-        abstractNode.children = children;
-
-        doc.create(abstractNode);
-        return abstractNode;
+        else
+            return ;
 
     };
 
@@ -1732,6 +1740,7 @@ NlmToLensConverter.Prototype = function () {
             "source_id": list.getAttribute("id"),
             "type": "list",
             "items": [],
+            "item_ids": [],
             "ordered": false,
             "list_type": ""
         };
@@ -1755,6 +1764,7 @@ NlmToLensConverter.Prototype = function () {
             var nodes = this.bodyNodes(state, util.dom.getChildren(listItem));
             for (var j = 0; j < nodes.length; j++) {
                 listNode.items.push(nodes[j].id);
+                listNode.item_ids.push(i);
             }
         }
         doc.create(listNode);

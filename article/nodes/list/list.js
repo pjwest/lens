@@ -15,6 +15,7 @@ List.type = {
   "properties": {
     "source_id": "string",
     "items": ["array", "paragraph"],
+    "item_ids": ["array", "integer"],
     "ordered": "boolean",
     "list_type": "string"
   }
