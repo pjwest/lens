@@ -1,0 +1,13 @@
+
+.lens-article .content-node.sec-meta .authors .text {
+    float: left;
+    padding: 0px;
+    margin: 0px;
+    font-size: 17px;
+    margin-right: 10px;
+    margin-bottom: 8px;
+    position: relative;
+    z-index: 10;
+}
+
+

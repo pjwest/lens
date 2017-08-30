@@ -52,7 +52,7 @@ TextView.Prototype = function() {
     this.content.innerHTML = "";
     this._annotations = this.node.document.getIndex("annotations").get(this.path);
     this.renderWithAnnotations(this._annotations);
-  };
+   };
 
   this.createAnnotationElement = function(entry) {
     if (this.options.createAnnotationElement) {
@@ -106,7 +106,7 @@ TextView.Prototype = function() {
     // set the content
     this.content.innerHTML = "";
     this.content.appendChild(fragment);
-  };
+   };
 };
 
 TextView.Prototype.prototype = NodeView.prototype;

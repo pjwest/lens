@@ -13,3 +13,8 @@
   padding: 20px 60px;
   padding-left: 100px;
 }
+
+
+.content-node.text.focussed {
+  background-color: grey;
+}

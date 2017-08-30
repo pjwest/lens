@@ -46,6 +46,7 @@ module.exports = {
   "contributor": require("./contributor"),
   "definition": require("./definition"),
   "citation": require("./citation"),
+  "mixed_citation": require("./mixed_citation"),
   "formula": require('./formula'),
   "list": require("./list"),
   "codeblock": require("./codeblock"),

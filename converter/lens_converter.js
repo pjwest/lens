@@ -43,7 +43,7 @@ NlmToLensConverter.Prototype = function () {
     // mapping of contrib type to human readable names
     // Can be overriden in specialized converter
     this._contribTypeMapping = {
-        "author": locales.Author,
+        "author": "Author",
         "author non-byline": "Author",
         "autahor": "Author",
         "auther": "Author",
@@ -68,7 +68,9 @@ NlmToLensConverter.Prototype = function () {
         "presenter": "Presenter",
         "guest-issue-editor": "Guest Issue Editor",
         "participant": "Participant",
-        "translator": "Translator"
+        "translator": "Translator",
+        "section-editor": "Section Editor",
+        "section-author": "Section Author"
     };
 
     this.isAnnotation = function (type) {
@@ -325,17 +327,17 @@ NlmToLensConverter.Prototype = function () {
                 "content": "Reviewing Editor"
             };
 
-            doc.create(h1);
-            nodes.push(h1.id);
+            //doc.create(h1);
+            //nodes.push(h1.id);
 
             var t1 = {
                 "type": "text",
                 "id": state.nextId("text"),
                 "content": content.join(", ")
             };
-
-            doc.create(t1);
-            nodes.push(t1.id);
+            //TODO reviewing editor
+            //doc.create(t1);
+            //nodes.push(t1.id);
         }
         return nodes;
     };
@@ -482,7 +484,7 @@ NlmToLensConverter.Prototype = function () {
                 "type": "heading",
                 "id": state.nextId("heading"),
                 "level": 3,
-                "content": locales.CopyRightAndLicenses
+                "content": "Copyright & License"
             };
             doc.create(h1);
             nodes.push(h1.id);
@@ -506,14 +508,19 @@ NlmToLensConverter.Prototype = function () {
                     }
                 }
             }
-            var lic = license.querySelector("license");
-            if (lic) {
-                for (var child = lic.firstElementChild; child; child = child.nextElementSibling) {
-                    var type = util.dom.getNodeType(child);
-                    if (type === 'p' || type === 'license-p') {
-                        par = this.paragraphGroup(state, child);
-                        if (par && par.length) {
-                            nodes = nodes.concat(_.pluck(par, 'id'));
+            var i;
+            var lic = license.querySelectorAll("license");
+            for (i = 0; i < lic.length; i++) {
+                if (lic[i].length == 1 || lic[i].getAttribute("xml:lang") == "en") {
+                    if (lic[i]) {
+                        for (var child = lic[i].firstElementChild; child; child = child.nextElementSibling) {
+                            var type = util.dom.getNodeType(child);
+                            if (type === 'p' || type === 'license-p') {
+                                par = this.paragraphGroup(state, child);
+                                if (par && par.length) {
+                                    nodes = nodes.concat(_.pluck(par, 'id'));
+                                }
+                            }
                         }
                     }
                 }
@@ -528,7 +535,7 @@ NlmToLensConverter.Prototype = function () {
         var docNode = doc.get("document");
         var articleMeta = article.querySelector("article-meta");
         var abstract = this._abstract(state, articleMeta);
-        var a_id ='';
+        var a_id = '';
         if (abstract !== undefined) {
             a_id = abstract.id
         }
@@ -537,7 +544,7 @@ NlmToLensConverter.Prototype = function () {
             id: "cover",
             type: "cover",
             title: docNode.title,
-            authors: [], // docNode.authors,
+            authors: [],
             abstract: a_id
         };
 
@@ -594,14 +601,17 @@ NlmToLensConverter.Prototype = function () {
     // We use the first author found in the contribGroup for the 'creator' property.
     this.contribGroup = function (state, contribGroup) {
         var i;
+        var contribGrp = [];
         var contribs = contribGroup.querySelectorAll("contrib");
         for (i = 0; i < contribs.length; i++) {
-            this.contributor(state, contribs[i]);
+            var c = this.contributor(state, contribs[i]);
+            contribGrp.push(c);
         }
         // Extract on-behalf-of element and stick it to the document
         var doc = state.doc;
         var onBehalfOf = contribGroup.querySelector("on-behalf-of");
         if (onBehalfOf) doc.on_behalf_of = onBehalfOf.textContent.trim();
+        return contribGrp;
     };
 
     this.affiliation = function (state, aff) {
@@ -731,9 +741,19 @@ NlmToLensConverter.Prototype = function () {
         if (contrib.getAttribute("contrib-type") === "author") {
             doc.nodes.document.authors.push(id);
         }
+        if (contrib.getAttribute("contrib-type") === "editor") {
+            doc.nodes.document.authors.push(id);
+        }
+        if (contrib.getAttribute("contrib-type") === "section-editor") {
+            doc.nodes.document.authors.push(id);
+        }
+        if (contrib.getAttribute("contrib-type") === "section-author") {
+            doc.nodes.document.authors.push(id);
+        }
 
         doc.create(contribNode);
         doc.show("info", contribNode.id);
+        return contribNode;
     };
 
     this._getEqualContribs = function (state, contrib, contribId) {
@@ -1040,10 +1060,11 @@ NlmToLensConverter.Prototype = function () {
         // TODO: the spec says, that there may be any combination of
         // 'contrib-group', 'aff', 'aff-alternatives', and 'x'
         // However, in the articles seen so far, these were sub-elements of 'contrib-group', which itself was single
-        var contribGroup = article.querySelector("article-meta contrib-group");
+        var contribGroup = article.querySelector("contrib-group");
         if (contribGroup) {
             this.contribGroup(state, contribGroup);
         }
+
 
     };
 
@@ -1139,6 +1160,7 @@ NlmToLensConverter.Prototype = function () {
             var value = el.textContent;
             if (type === "day") {
                 day = parseInt(value, 10);
+
             } else if (type === "month") {
                 month = parseInt(value, 10);
             } else if (type === "year") {
@@ -1161,60 +1183,64 @@ NlmToLensConverter.Prototype = function () {
 
     this._abstract = function (state, abs) {
         var title = abs.querySelector("title");
-        if (title !== null) {
-            var doc = state.doc;
-            var abstractNode = {
-                id: state.nextId("abstract"),
-                type: "abstract",
-                label: "",
-                title: "",
-                children: []
-            }
-            // Get Abstract title
 
-            var iterator = new util.dom.ChildNodeIterator(title);
-            while (iterator.hasNext()) {
-                var child = iterator.next();
-                var type = util.dom.getNodeType(child);
-
-                // annotated text node
-                if (type === "text" || this.isAnnotation(type)) {
-                    var textNode = {
-                        id: state.nextId("text"),
-                        type: "text",
-                        content: null
-                    };
-                }
-            }
-            // pushing information to the stack so that annotations can be created appropriately
-            state.stack.push({
-                path: [textNode.id, "content"]
-            });
-
-            var annotatedText = this._annotatedText(state, iterator.back(), {offset: 0, breakOnUnknown: true});
-
-            // Ignore empty paragraphs
-            if (annotatedText.length > 0) {
-                textNode.content = annotatedText;
-                doc.create(textNode);
-                //nodes.push(textNode);
-            }
-            abstractNode.title = textNode.id;
-
-            var children = [];
-            var paragraphs = abs.querySelectorAll("p");
-            _.each(paragraphs, function (p) {
-
-                //if (p.parentNode !== abs) return;
-                var node = this.paragraph(state, p);
-                if (node) children.push(node.id);
-            }, this);
-            abstractNode.children = children;
-            doc.create(abstractNode);
-            return abstractNode;
+        var doc = state.doc;
+        var abstractNode = {
+            id: state.nextId("abstract"),
+            type: "abstract",
+            label: "",
+            title: "",
+            children: []
         }
-        else
-            return ;
+        if (title !== null) {
+            if (title.textContent.length > 0) {
+                var iterator = new util.dom.ChildNodeIterator(title);
+                while (iterator.hasNext()) {
+                    var child = iterator.next();
+                    var type = util.dom.getNodeType(child);
+
+                    // annotated text node
+                    if (type === "text" || this.isAnnotation(type)) {
+                        var textNode = {
+                            id: state.nextId("text"),
+                            type: "text",
+                            content: null
+                        };
+                    }
+                }
+                // pushing information to the stack so that annotations can be created appropriately
+                state.stack.push({
+                    path: [textNode.id, "content"]
+                });
+
+                var annotatedText = this._annotatedText(state, iterator.back(), {offset: 0, breakOnUnknown: true});
+
+                // Ignore empty paragraphs
+                if (annotatedText.length > 0) {
+                    textNode.content = annotatedText;
+                    doc.create(textNode);
+                    //nodes.push(textNode);
+                }
+                abstractNode.title = textNode.id;
+            }
+            else {
+            }
+        }
+        else {
+        }
+
+        var children = [];
+        var paragraphs = abs.querySelectorAll("p");
+        _.each(paragraphs, function (p) {
+
+            //if (p.parentNode !== abs) return;
+            var node = this.paragraph(state, p);
+            if (node) children.push(node.id);
+        }, this);
+        abstractNode.children = children;
+        doc.create(abstractNode);
+        return abstractNode;
+
 
     };
 
@@ -1326,16 +1352,68 @@ NlmToLensConverter.Prototype = function () {
     this._bodyNodes["abstract"] = function (state, child) {
         return this._abstract(state, child);
     };
+    this._bodyNodes["contrib-group"] = function (state, child) {
+        return this.contribGroup(state, child);
+    };
 
     this.secMeta = function (state, secMeta) {
         var doc = state.doc;
+        var docNode = doc.get("document");
         var childNodes = this.bodyNodes(state, util.dom.getChildren(secMeta));
+
         var secMetaID = state.nextId("sec_meta");
         var secNode = {
             "id": secMetaID,
             "type": "sec_meta",
-            "children": _.pluck(childNodes, 'id')
+            "children": _.pluck(childNodes, 'id'),
+            "authors": [],
+            "abstract": []
         };
+
+        var section_contributors = ["Section Editor", "Section Author"];
+        var i;
+
+        _.each(docNode.authors, function (contributorId) {
+
+            var contributor = doc.get(contributorId);
+            for (i = 0; i < section_contributors.length; i++) {
+                if (contributor.contributor_type === section_contributors[i]) {
+
+                    var authorsPara = {
+                        "id": "text_" + contributorId + "_reference",
+                        "type": "text",
+                        "content": contributor.name
+                    };
+
+                    var anno = {
+                        id: state.nextId("contributor_reference"),
+                        type: "contributor_reference",
+                        path: ["text_" + contributorId + "_reference", "content"],
+                        range: [0, contributor.name.length],
+                        target: contributorId
+                    };
+
+
+                    _.each(childNodes, function (c) {
+
+                        if (c.type === "contributor" & c.id === contributor.id) {
+                            doc.create(authorsPara);
+                            secNode.authors.push(authorsPara.id);
+                            doc.create(anno);
+
+
+                        }
+                    }, this);
+
+                }
+            }
+
+        }, this);
+        _.each(childNodes, function (c) {
+            if (c.type === "abstract") {
+                secNode.abstract.push(c.id);
+            }
+        }, this);
         doc.create(secNode);
         return secNode;
     };
@@ -2298,14 +2376,31 @@ NlmToLensConverter.Prototype = function () {
             var doi = citation.querySelector("pub-id[pub-id-type='doi'], ext-link[ext-link-type='doi']");
             if (doi) citationNode.doi = "http://dx.doi.org/" + doi.textContent;
         } else {
-            console.error("FIXME: there is one of those 'mixed-citation' without any structure. Skipping ...", citation);
-            return;
-            // citationNode = {
-            //   id: id,
-            //   type: "mixed_citation",
-            //   citation: citation.textContent,
-            //   doi: ""
-            // };
+            var blocks = this.segmentParagraphElements(citation);
+            var i, j;
+            for (i = 0; i < blocks.length; i++) {
+                var block = blocks[i];
+                for (j = 0; j < block.nodes.length; j++) {
+                    if (block.nodes[j].tagName == 'xref') {
+                        var sourceId = block.nodes[j].getAttribute("rid");
+                        var targetNode = state.doc.getNodeBySourceId(sourceId);
+                        if (targetNode !== undefined) {
+                            block.nodes[j].target = targetNode.properties.id;
+                        }
+                    }
+                    else {
+
+                    }
+                }
+            }
+
+            citationNode = {
+               id: id,
+               type: "mixed_citation",
+               text: blocks,
+               doi: ""
+            };
+
         }
         doc.create(citationNode);
         doc.show("citations", id);

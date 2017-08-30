@@ -51,7 +51,23 @@ CitationView.Prototype = function () {
 
                 }
                 else {
-                    frag.appendChild(text[i]);
+                    if (text[i].tagName == 'ext-link'){
+                        xref = document.createElement("a");
+                        xref.className = "content-node link";
+                        xref.setAttribute("href", text[i]);
+                        var href = text[i].getAttributeNodeNS("http://www.w3.org/1999/xlink","href")
+                        if (href) {
+                            xref.innerHTML = text[i].innerHTML;
+                            xref.setAttribute("href", href.textContent);
+                        }
+
+                        frag.appendChild(xref);
+
+                    }
+                    else {
+                        frag.appendChild(text[i]);
+                    }
+
                 }
             }
         }

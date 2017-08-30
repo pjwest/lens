@@ -1,5 +1,6 @@
 "use strict";
 
+var _ = require("underscore");
 var Document = require('../../../substance/document');
 var Composite = Document.Composite;
 
@@ -20,8 +21,11 @@ secMeta.type = {
   "parent": "content",
   "properties": {
       "children":{
-        "abstract":"abstract"
-      }
+        "abstract":"abstract",
+
+      },
+      "authors": ["array", "paragraph"],
+      "abstract":["array", "abstract"],
     }
 
 
@@ -61,6 +65,18 @@ secMeta.Prototype = function() {
   this.getChildrenIds = function() {
     return this.properties.children;
   };
+
+  this.getAuthors = function() {
+        return _.map(this.properties.authors, function(paragraphId) {
+            return this.document.get(paragraphId);
+        }, this);
+    };
+
+    this.getAbstract = function() {
+        return _.map(this.properties.abstract, function(paragraphId) {
+            return this.document.get(paragraphId);
+        }, this);
+    };
 
 };
 
