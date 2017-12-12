@@ -268,7 +268,7 @@ out (on iOS 5.1), or flicker (on iOS 6). */
 .article .resources .content-node .resource-header .toggle {
   float: left;
   font-size: 12px;
-  font-weight: 600;
+  /**font-weight: 600;**/
   bottom: 0px;
   text-align: center;
   line-height: 50px;
@@ -415,7 +415,7 @@ span.annotation.formula_reference, span.publication_reference {
 .content-node .question { background-color: rgba(16, 167, 222, 0.3); }
 .content-node .error { background-color: rgba(237, 96, 48, 0.3); }
 
-.content-node .link { color: #900; font-weight: bold; }
+.content-node .link { color: #900; font-weight: normal; }
 .content-node .link:hover, .content-node .link.highlighted { color: rgba(153, 0 , 0,1); }
 
 /* Inline Code Annotations */

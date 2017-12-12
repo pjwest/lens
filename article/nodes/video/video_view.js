@@ -33,6 +33,7 @@ VideoView.Prototype = function() {
     //
 
     var node = this.node;
+    //console.log('video node', node);
 
     // The actual video
     // --------
@@ -41,7 +42,8 @@ VideoView.Prototype = function() {
     var sources = [
       $$('source', {
         src: node.url,
-        type: "video/mp4; codecs=&quot;avc1.42E01E, mp4a.40.2&quot;",
+        //type: "video/mp4;",
+        //type: "video/mp4; codecs=&quot;avc1.42E01E, mp4a.40.2&quot;",
       })
     ];
 
@@ -65,7 +67,7 @@ VideoView.Prototype = function() {
           controls: "controls",
           poster: node.poster,
           preload: "none",
-          // style: "background-color: black",
+           style: "background-color: black",
           children: sources
         })
       ]
@@ -93,6 +95,7 @@ VideoView.Prototype = function() {
     // Add DOI link if available
     // --------
     //
+    //  console.log('video', this);
 
     if (node.doi) {
       this.content.appendChild($$('.doi', {

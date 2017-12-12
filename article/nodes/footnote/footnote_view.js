@@ -32,7 +32,6 @@ CitationView.Prototype = function () {
         // -------
         //
         var italic, xref;
-
         var text = node.properties.text[0].nodes;
         if (text !== undefined) {
             for (var i = 0; i < text.length; i++) {
@@ -55,6 +54,7 @@ CitationView.Prototype = function () {
                         xref = document.createElement("a");
                         xref.className = "content-node link";
                         xref.setAttribute("href", text[i]);
+                        xref.setAttribute("target","_blank");
                         var href = text[i].getAttributeNodeNS("http://www.w3.org/1999/xlink","href")
                         if (href) {
                             xref.innerHTML = text[i].innerHTML;

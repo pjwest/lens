@@ -139,7 +139,8 @@ CoverView.Prototype = function() {
       var doi = pubInfo.doi;
       if (doi) {
         this.content.appendChild($$('.doi', {
-          html: 'DOI: <a href="http://dx.doi.org/'+doi+'">'+doi+'</a>'
+          //TODO html: 'DOI: <a href="http://dx.doi.org/'+doi+'">'+doi+'</a>'
+          html: 'DOI: <a href="'+doi+'">'+doi+'</a>'
         }));
       }
     }

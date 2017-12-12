@@ -80,6 +80,9 @@ Video.Prototype = function() {
       return "";
     }
   };
+    this.includeInToc = function() {
+        return false;
+    };
 
 };
 

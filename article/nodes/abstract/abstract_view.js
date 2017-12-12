@@ -20,7 +20,7 @@ abstractView.Prototype = function () {
         var title = this.node.title;
 
         if (title != null || title !== undefined) {
-            if (title.textContent === undefined & title.length ==0 ) {
+            if (title.textContent === undefined & title.length == 0) {
                 title = document.createElement("div");
                 title.className = 'content';
                 var title_text = document.createElement("div");
@@ -30,7 +30,7 @@ abstractView.Prototype = function () {
 
             }
             else {
-                if(title.length>0) {
+                if (title.length > 0) {
                     var childView = this.createChildView(title);
                     var childViewEl = childView.render().el;
                     childViewEl.className += ' title';
@@ -40,8 +40,10 @@ abstractView.Prototype = function () {
             }
         }
 
-        this.el.appendChild(this.content);
-        this.renderChildren();
+        if (this.node.children.length > 0) {
+            this.el.appendChild(this.content);
+            this.renderChildren();
+        }
         return this;
     };
 };

@@ -19,6 +19,7 @@ MixedCitation.type = {
   "properties": {
     "source_id": "string",
     "text": "object",
+    "title": "string",
     "label": "string",
     "authors": ["array", "string"],
     "doi": "string",

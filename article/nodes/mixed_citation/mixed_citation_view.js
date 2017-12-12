@@ -27,13 +27,10 @@ MixedCitationView.Prototype = function () {
         var frag = document.createDocumentFragment();
         var node = this.node;
 
-
         // Add text
         // -------
         //
         var italic, xref;
-        console.log("mixed-citation-view", node);
-
         var text = node.properties.text[0].nodes;
         if (text !== undefined) {
             for (var i = 0; i < text.length; i++) {

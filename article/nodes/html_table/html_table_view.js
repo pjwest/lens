@@ -17,10 +17,10 @@ HTMLTableView.Prototype = function () {
         var i, childView, childViewEl, htmlTable, row, tr, td;
 
         htmlTable = document.createElement('table');
-        htmlTable.setAttribute('class', 'html-table');
+
+        htmlTable.setAttribute('class', 'daten-tabelle');
 
         var tr = document.createElement('tr');
-        tr.setAttribute('class', 'html-table');
 
         var rows = this.node.getChildrenIds();
 
@@ -30,13 +30,17 @@ HTMLTableView.Prototype = function () {
                 tr = document.createElement('tr');
                 for (var i = 0; i < row.length; i++) {
                     td = document.createElement('td');
-                    td.setAttribute('class', 'html-table');
+                    var attribs = row[i].attributes;
+                    if (attribs !== undefined) {
+                        for (var j = 0; j < attribs.length; j++) {
+                            td.setAttribute(attribs[j].name, attribs[j].value);
+                        }
+                    }
                     childView = this.createChildView(row[i].id);
                     childViewEl = childView.render().el;
                     td.appendChild(childViewEl);
                     tr.appendChild(td);
                     htmlTable.appendChild(tr);
-
                 }
             }
         }
@@ -53,6 +57,7 @@ HTMLTableView.Prototype.prototype = CompositeView.prototype;
 HTMLTableView.prototype = new HTMLTableView.Prototype();
 
 module.exports = HTMLTableView;
+
 
 /**
  var footers = $$('.footers', {

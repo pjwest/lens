@@ -72,6 +72,10 @@ Figure.Prototype = function() {
   this.getHeader = function() {
     return this.properties.label;
   };
+
+    this.includeInToc = function() {
+        return true;
+    };
 };
 
 Figure.Prototype.prototype = Document.Composite.prototype;

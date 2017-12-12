@@ -269,7 +269,7 @@ ElifeConverter.Prototype = function() {
     publicationInfo.subject_link = 'https://elifesciences.org/category'
     publicationInfo.article_type_link = 'https://elifesciences.org/category'
 
-    if (publicationInfo.related_article) publicationInfo.related_article = "http://dx.doi.org/" + publicationInfo.related_article;
+    if (publicationInfo.related_article) publicationInfo.related_article = "https://doi.org/" + publicationInfo.related_article;
   };
 
   this.enhanceSupplement = function(state, node) {
