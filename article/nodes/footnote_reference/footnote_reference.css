@@ -1,0 +1,4 @@
+.footnote_reference > span.superscript {
+    font-size: 12px;
+    vertical-align: baseline;
+}

@@ -1315,7 +1315,7 @@ NlmToLensConverter.Prototype = function () {
             child.innerHTML = ' ';
         }
         var node = this.paragraphGroup(state, child);
-        node[0].attributes = child.attributes;
+        //node[0].attributes = child.attributes;
         return node;
     };
     this._bodyNodes["sec"] = function (state, child) {

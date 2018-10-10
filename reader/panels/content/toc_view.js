@@ -24,17 +24,19 @@ TOCView.Prototype = function() {
   this.render = function() {
     var lastLevel = -1;
     var tocNodes = this.doc.getTocNodes();
-    console.log(tocNodes);
     // don't render if only 2 sections
 
     var backLinkContainer = document.createElement('div');
     backLinkContainer.setAttribute('class','navigation');
     var backLink = document.createElement('a');
+    //TODO disable back link
+    /*
     var linkUrl = '../../../../'+application+'/catalog/book/'+submission_id;
     backLink.setAttribute('href',linkUrl);
     backLink.textContent =locales.Back;
     backLinkContainer.appendChild(backLink);
     this.el.appendChild(backLinkContainer);
+    */
 
     // TODO: this should be decided by the toc panel
     if (tocNodes.length < 2) return this;

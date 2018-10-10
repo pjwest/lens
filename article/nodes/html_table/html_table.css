@@ -54,3 +54,69 @@
   font-size: 12px;
   background: #fff;
 }
+
+/** Formatierung der Klasse "layout-tabelle" - Layout-Tabelle - , die nur zur Anordnung von Elementen verwendet wird **/
+.lens-article .content-node.html-table .layout-tabelle {
+  border: 0;
+  width: auto;
+  margin-left: 0;
+}
+
+.lens-article .content-node.html-table .layout-tabelle td {
+  border: 0;
+  font-size: 1em;
+  padding: 3px;
+}
+
+/** Formatierung der Klasse "gitter-tabelle" - Gitter-Tabelle  **/
+.lens-article .content-node.html-table .gitter-tabelle {
+  border: 1px solid lightgray;
+  border-collapse: collapse;
+  width: auto;
+  margin-left: 0;
+}
+
+.lens-article .content-node.html-table .gitter-tabelle td {
+  border: 1px solid lightgray;
+  border-collapse: collapse;
+  padding: 3px;
+}
+
+
+
+/** Layout Daten-Tabelle Issue Nr. 58
+ für heiUP auskommentiert, um mehrspaltigen Satz ohne Färbung zu ermöglichen, To do: HTML/CSS-Konstruktion für mehrspaltigen Satz - 09.03. voe - neues default ist layout-tabelle, deshalb testweise wieder einkommentiert - 07.08. voe**/
+
+.lens-article .content-node.html-table > .content {  /* Wie wirkt sich diese klassenunabhängige Anweisung aus? Test! 07.08.. - wenn bis 07.11. keine Verschiebungen bekannt werden, kann Hinweis entfernt werden.*/
+  padding-left: 0;
+}
+
+.lens-article .content-node.html-table .daten-tabelle {
+  border: 1px solid #f8f8f8;
+  overflow-x: scroll;
+}
+
+.lens-article .content-node.html-table .daten-tabelle tr {
+  vertical-align: top;
+}
+
+.lens-article .content-node.html-table .daten-tabelle tr:nth-child(odd) {
+  background-color: #f8f8f8;
+}
+
+.lens-article .content-node.html-table .daten-tabelle tr:nth-child(odd) td:empty {
+  background-color: #f8f8f8;
+}
+
+
+.lens-article .content-node.html-table .daten-tabelle td {
+  border-right: 1px solid #f8f8f8;
+  padding: 10px;
+}
+.lens-article .content-node.html-table table td {
+  font-size: 0.75em;
+  line-height: 1.7em;
+}
+
+
+

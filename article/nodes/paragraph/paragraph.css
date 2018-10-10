@@ -32,3 +32,185 @@
   display: inline;
   padding: 0px;
 }
+
+.content-node.paragraph.margin-top-1 {
+  margin-top: 1em;
+}
+
+.content-node.paragraph.margin-top-2 {
+  margin-top: 2em;
+}
+
+.content-node.paragraph.margin-bottom-1 {
+  margin-bottom: 1em;
+}
+
+.content-node.paragraph.margin-bottom-2 {
+  margin-bottom: 2em;
+}
+
+.content-node.paragraph.margin-left-1 {
+  margin-left: 2ex;
+}
+
+.content-node.paragraph.margin-right-1 {
+  margin-right: 2ex;
+}
+
+.content-node.paragraph.centered {
+  text-align: center;
+}
+
+.content-node.paragraph.text-orientation-vertical-lr {
+  writing-mode: vertical-lr;
+}
+
+.content-node.paragraph.font-family-NotoSansMonoBlack {
+  font-family: 'Noto Sans Mono Black';
+}
+
+.content-node.paragraph.font-family-NotoSansMonoBold {
+  font-family: 'Noto Sans Mono Bold';
+}
+
+.content-node.paragraph.font-family-NotoSansMonoCondensed {
+  font-family: 'Noto Sans Mono Condensed';
+}
+
+.content-node.paragraph.font-family-NotoSansMonoCondensedBlack {
+  font-family: 'Noto Sans Mono Condensed Black';
+}
+
+.content-node.paragraph.font-family-NotoSansMonoCondensedBold {
+  font-family: 'Noto Sans Mono Condensed Bold';
+}
+
+.content-node.paragraph.font-family-NotoSansMonoCondensedExtraBold {
+  font-family: 'Noto Sans Mono Condensed Extra Bold';
+}
+
+.content-node.paragraph.font-family-NotoSansMonoCondensedExtraLight {
+  font-family: 'Noto Sans Mono Condensed Extra Light';
+}
+
+.content-node.paragraph.font-family-NotoSansMonoCondensedLight {
+  font-family: 'Noto Sans Mono Condensed Light';
+}
+
+.content-node.paragraph.font-family-NotoSansMonoCondensedMedium {
+  font-family: 'Noto Sans Mono Condensed Medium';
+}
+
+.content-node.paragraph.font-family-NotoSansMonoCondensedSemiBold {
+  font-family: 'Noto Sans Mono Condensed Semi Bold';
+}
+
+.content-node.paragraph.font-family-NotoSansMonoCondensedThin {
+  font-family: 'Noto Sans Mono Condensed Thin';
+}
+
+.content-node.paragraph.font-family-NotoSansMonoExtraBold {
+  font-family: 'Noto Sans Mono Extra Bold';
+}
+
+.content-node.paragraph.font-family-NotoSansMonoExtraCondensed {
+  font-family: 'Noto Sans Mono Extra Condensed';
+}
+
+.content-node.paragraph.font-family-NotoSansMonoExtraCondensedBlack {
+  font-family: 'Noto Sans Mono Extra Condensed Black';
+}
+
+.content-node.paragraph.font-family-NotoSansMonoExtraCondensedBold {
+  font-family: 'Noto Sans Mono Extra Condensed Bold';
+}
+
+.content-node.paragraph.font-family-NotoSansMonoExtraCondensedExtraBold {
+  font-family: 'Noto Sans Mono Extra Condensed Extra Bold';
+}
+
+.content-node.paragraph.font-family-NotoSansMonoExtraCondensedExtraLight {
+  font-family: 'Noto Sans Mono Extra Condensed Extra Light';
+}
+
+.content-node.paragraph.font-family-NotoSansMonoExtraCondensedLight {
+  font-family: 'Noto Sans Mono Extra Condensed Light';
+}
+
+.content-node.paragraph.font-family-NotoSansMonoExtraCondensedMedium {
+  font-family: 'Noto Sans Mono Extra Condensed Medium';
+}
+
+.content-node.paragraph.font-family-NotoSansMonoExtraCondensedSemiBold {
+  font-family: 'Noto Sans Mono Extra Condensed Semi Bold';
+}
+
+.content-node.paragraph.font-family-NotoSansMonoExtraCondensedThin {
+  font-family: 'Noto Sans Mono Extra Condensed Thin';
+}
+
+.content-node.paragraph.font-family-NotoSansMonoExtraLight {
+  font-family: 'Noto Sans Mono Extra Light';
+}
+
+.content-node.paragraph.font-family-NotoSansMonoLight {
+  font-family: 'Noto Sans Mono Light';
+}
+
+.content-node.paragraph.font-family-NotoSansMonoMedium {
+  font-family: 'Noto Sans Mono Medium';
+}
+
+.content-node.paragraph.font-family-NotoSansMonoRegular {
+  font-family: 'Noto Sans Mono Regular';
+}
+
+.content-node.paragraph.font-family-NotoSansMonoSemiBold {
+  font-family: 'Noto Sans Mono Semi Bold';
+}
+
+.content-node.paragraph.font-family-NotoSansMonoSemiCondensed {
+  font-family: 'Noto Sans Mono Semi Condensed';
+}
+
+.content-node.paragraph.font-family-NotoSansMonoSemiCondensedBlack {
+  font-family: 'Noto Sans Mono Semi Condensed Black';
+}
+
+.content-node.paragraph.font-family-NotoSansMonoSemiCondensedBold {
+  font-family: 'Noto Sans Mono Semi Condensed Bold';
+}
+
+.content-node.paragraph.font-family-NotoSansMonoSemiCondensedExtraBold {
+  font-family: 'Noto Sans Mono Semi Condensed Extra Bold';
+}
+
+.content-node.paragraph.font-family-NotoSansMonoSemiCondensedExtraLight {
+  font-family: 'Noto Sans Mono Semi Condensed Extra Light';
+}
+
+.content-node.paragraph.font-family-NotoSansMonoSemiCondensedLight {
+  font-family: 'Noto Sans Mono Semi Condensed Light';
+}
+
+.content-node.paragraph.font-family-NotoSansMonoSemiCondensedMedium {
+  font-family: 'Noto Sans Mono Semi Condensed Medium';
+}
+
+.content-node.paragraph.font-family-NotoSansMonoSemiCondensedSemiBold {
+  font-family: 'Noto Sans Mono Semi Condensed Semi Bold';
+}
+
+.content-node.paragraph.font-family-NotoSansMonoSemiCondensedThin {
+  font-family: 'Noto Sans Mono Semi Condensed Thin';
+}
+
+.content-node.paragraph.font-family-NotoSansMonoThin {
+  font-family: 'Noto Sans Mono Thin';
+}
+
+.content-node.paragraph.right {
+  text-align: right;
+  display: block !important;
+  line-height: 28px !important;
+}

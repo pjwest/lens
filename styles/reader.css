@@ -268,7 +268,7 @@ out (on iOS 5.1), or flicker (on iOS 6). */
 .article .resources .content-node .resource-header .toggle {
   float: left;
   font-size: 12px;
-  /**font-weight: 600;**/
+  /* font-weight: 600;*/
   bottom: 0px;
   text-align: center;
   line-height: 50px;
@@ -473,7 +473,9 @@ span.annotation.formula_reference, span.publication_reference {
     padding-right: 3px;
     padding-left: 3px;
     vertical-align: super;
-    font-size: smaller;
+    /* font-size: smaller; */
+    font-size: 12px;
+    line-height: 0;
 }
 
 .content-node .cross_reference {
@@ -768,6 +770,16 @@ TOC
   color: rgba(0,0,0,1);
 }
 
+.resource-view.toc .heading-ref .authors .author {
+  padding-left: 0px;
+  padding-right: 5px;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: normal;
+  color: #900;
+
+}
+
 /* Scrollbar
 --------------------------------------- */
 
@@ -870,4 +882,41 @@ TOC
 }
 .panel.content.document > .surface.resource-view.content > .nodes > .content-node.heading.level-4 {
   padding-top: 20px;
+}
+
+
+/** Listen **/
+
+.content.simple {
+  list-style-type: none;
+}
+
+/*ul.content {
+  }
+
+ol.content.ordered {
+  }*/
+
+.content.alpha-lower {
+  list-style-type: lower-alpha;
+}
+
+.content.alpha-upper {
+  list-style-type: upper-alpha;
+}
+
+.content.roman-lower {
+  list-style-type: lower-roman;
+}
+
+.content.roman-upper {
+  list-style-type: upper-roman;
+}
+
+.content.greek-lower {
+  list-style-type: lower-greek;
+}
+
+.content.greek-upper {
+  list-style-type: upper-greek;
 }

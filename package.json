@@ -1,8 +1,68 @@
 {
-  "name": "lens",
-  "version": "2.1.0",
+  "_from": "github:withanage/lens",
+  "_id": "lens@2.1.0",
+  "_inBundle": false,
+  "_location": "/lens",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "git",
+    "raw": "lens@github:withanage/lens",
+    "name": "lens",
+    "escapedName": "lens",
+    "rawSpec": "github:withanage/lens",
+    "saveSpec": "github:withanage/lens",
+    "fetchSpec": null,
+    "gitCommittish": null
+  },
+  "_requiredBy": [
+    "/"
+  ],
+  "_resolved": "github:withanage/lens#71ec18ffe0303a6ec23c16cd260b43fa1c84abad",
+  "_spec": "lens@github:withanage/lens",
+  "_where": "/home/wit/projects/UBHD-Lens",
+  "author": {
+    "name": "Michael Aufreiter"
+  },
+  "bugs": {
+    "url": "https://github.com/elifesciences/lens/issues"
+  },
+  "bundleDependencies": false,
+  "contributors": [
+    {
+      "name": "Ivan Grubisic"
+    },
+    {
+      "name": "Oliver Buchtala"
+    },
+    {
+      "name": "Ian Mulvany"
+    },
+    {
+      "name": "Ian Hamilton"
+    },
+    {
+      "name": "Graham Nott"
+    },
+    {
+      "name": "Samo Korosec"
+    },
+    {
+      "name": "Rebecca Close"
+    },
+    {
+      "name": "Felix Breuer"
+    }
+  ],
+  "dependencies": {
+    "underscore": "1.8.3"
+  },
+  "deprecated": false,
   "description": "A novel way of seeing content.",
-  "url": "https://github.com/elifesciences/lens",
+  "engines": {
+    "node": ">=0.8.x",
+    "npm": ">=1.1.x"
+  },
+  "homepage": "https://github.com/elifesciences/lens#readme",
   "keywords": [
     "digital documents",
     "linked-data",
@@ -10,27 +70,11 @@
     "science"
   ],
   "license": "BSD",
-  "author": "Michael Aufreiter",
-  "contributors": [
-    "Ivan Grubisic",
-    "Oliver Buchtala",
-    "Ian Mulvany",
-    "Ian Hamilton",
-    "Graham Nott",
-    "Samo Korosec",
-    "Rebecca Close",
-    "Felix Breuer"
-  ],
+  "name": "lens",
   "repository": {
     "type": "git",
-    "url": "https://github.com/elifesciences/lens.git"
+    "url": "git+https://github.com/elifesciences/lens.git"
   },
-  "dependencies": {
-    "underscore": "1.8.3"
-  },
-
-  "engines": {
-    "node": ">=0.8.x",
-    "npm": ">=1.1.x"
-  }
+  "url": "https://github.com/elifesciences/lens",
+  "version": "2.1.0"
 }
