@@ -30,11 +30,11 @@ TOCView.Prototype = function() {
     var backLinkContainer = document.createElement('div');
     backLinkContainer.setAttribute('class','navigation');
     var backLink = document.createElement('a');
-    var linkUrl = '../../../../'+application+'/catalog/book/'+submission_id;
+    var linkUrl = '';
     backLink.setAttribute('href',linkUrl);
     backLink.textContent =locales.Back;
     backLinkContainer.appendChild(backLink);
-    this.el.appendChild(backLinkContainer);
+   // this.el.appendChild(backLinkContainer);
 
     // TODO: this should be decided by the toc panel
     if (tocNodes.length < 2) return this;
