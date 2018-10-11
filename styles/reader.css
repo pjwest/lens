@@ -47,7 +47,7 @@ out (on iOS 5.1), or flicker (on iOS 6). */
   float: left;
   overflow: hidden;
   height: 100%;
-  width: 60%;
+  width: 70%;
   border-right: 1px solid #ddd;
 }
 
@@ -138,7 +138,7 @@ out (on iOS 5.1), or flicker (on iOS 6). */
 .article .resources {
   float: right;
   line-height: 25px;
-  width: 40%;
+  width: 30%;
 
   height: 100%;
   padding-left: 50px;
@@ -268,7 +268,7 @@ out (on iOS 5.1), or flicker (on iOS 6). */
 .article .resources .content-node .resource-header .toggle {
   float: left;
   font-size: 12px;
-  /* font-weight: 600;*/
+  font-weight: 600;
   bottom: 0px;
   text-align: center;
   line-height: 50px;
@@ -770,15 +770,17 @@ TOC
   color: rgba(0,0,0,1);
 }
 
-.resource-view.toc .heading-ref .authors .author {
-  padding-left: 0px;
+.resource-view.toc .heading-ref .authors  .author{
+  padding-left: 10px;
   padding-right: 5px;
   font-size: 14px;
   font-style: normal;
   font-weight: normal;
   color: #900;
-
 }
+
+
+
 
 /* Scrollbar
 --------------------------------------- */

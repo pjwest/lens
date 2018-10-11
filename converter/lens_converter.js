@@ -196,13 +196,18 @@ NlmToLensConverter.Prototype = function () {
         var year = dateEl.querySelector("year");
         var month = dateEl.querySelector("month");
         var day = dateEl.querySelector("day");
-
-        var res = [year.textContent];
+        var res = (year !== null ? [year.textContent] : []);
         if (month) res.push(month.textContent);
         if (day) res.push(day.textContent);
 
         return res.join("-");
     };
+
+    this.extractURLSuffix = function (url) {
+        var url = url.replace("https://doi.org/", "");
+
+        return url;
+    }
 
     this.extractPublicationInfo = function (state, article) {
         var doc = state.doc;
@@ -237,7 +242,7 @@ NlmToLensConverter.Prototype = function () {
             "published_on": this.extractDate(pubDate),
             "journal": journalTitle ? journalTitle.textContent : "",
             "related_article": relatedArticle ? relatedArticle.getAttribute("xlink:href") : "",
-            "doi": articleDOI ? articleDOI.textContent : "",
+            "doi": articleDOI ? this.extractURLSuffix(articleDOI.textContent) : "",
             "article_info": articleInfo.id,
             // TODO: 'article_type' should not be optional; we need to find a good default implementation
             "article_type": "",
@@ -1073,7 +1078,7 @@ NlmToLensConverter.Prototype = function () {
         // Globally query all figure-ish content, <fig>, <supplementary-material>, <table-wrap>, <media video>
         // mimetype="video"
         var body = xmlDoc.querySelector("body");
-        var figureElements = body.querySelectorAll("fig, table-wrap, supplementary-material, media[mimetype=video]");
+        var figureElements = body.querySelectorAll("fig, table-wrap, supplementary-material, media[mimetype=video], media[mimetype=audio]");
         var nodes = [];
         for (var i = 0; i < figureElements.length; i++) {
             var figEl = figureElements[i];
@@ -1088,7 +1093,8 @@ NlmToLensConverter.Prototype = function () {
             //    node = this.tableWrap(state, figEl)};
             else if (type === "media") {
                 node = this.video(state, figEl);
-            } else if (type === "supplementary-material") {
+            }
+            else if (type === "supplementary-material") {
                 node = this.supplement(state, figEl);
             }
             if (node) {
@@ -1310,14 +1316,6 @@ NlmToLensConverter.Prototype = function () {
         return this.paragraphGroup(state, child);
     };
 
-    this._bodyNodes["td"] = function (state, child) {
-        if (child.innerHTML === '') {
-            child.innerHTML = ' ';
-        }
-        var node = this.paragraphGroup(state, child);
-        //node[0].attributes = child.attributes;
-        return node;
-    };
     this._bodyNodes["sec"] = function (state, child) {
         return this.section(state, child);
     };
@@ -1357,6 +1355,7 @@ NlmToLensConverter.Prototype = function () {
     this._bodyNodes["abstract"] = function (state, child) {
         return this._abstract(state, child);
     };
+
     this._bodyNodes["contrib-group"] = function (state, child) {
         return this.contribGroup(state, child);
     };
@@ -1405,8 +1404,6 @@ NlmToLensConverter.Prototype = function () {
                             doc.create(authorsPara);
                             secNode.authors.push(authorsPara.id);
                             doc.create(anno);
-
-
                         }
                     }, this);
 
@@ -1603,6 +1600,8 @@ NlmToLensConverter.Prototype = function () {
 
         if (!title) {
             console.error("FIXME: every section should have a title", this.toHtml(section));
+
+
         }
         // Recursive Descent: get all section body nodes
         nodes = nodes.concat(this.bodyNodes(state, children, {
@@ -1616,8 +1615,31 @@ NlmToLensConverter.Prototype = function () {
                 source_id: section.getAttribute("id"),
                 type: "heading",
                 level: state.sectionLevel,
-                content: title ? this.annotatedText(state, title, [id, 'content']) : ""
+                content: title ? this.annotatedText(state, title, [id, 'content']) : "",
+                authors: []
+
             };
+            if (heading.content.length > 1) {
+                var sec = this.selectDirectChildren(section, 'sec-meta')[0];
+                if (sec !== undefined) {
+                    var contribGroup = sec.querySelector("contrib-group");
+                    var contribs = contribGroup.querySelectorAll("contrib");
+                    for (var i = 0; i < contribs.length; i++) {
+                        var nameEl = contribs[i].querySelector("name");
+                        if (nameEl) {
+                            var name = this.getName(nameEl);
+                            heading.authors.push(name);
+                        }
+
+
+                    }
+
+
+
+                }
+
+            }
+
 
             if (label) {
                 heading.label = label.textContent;
@@ -1630,6 +1652,7 @@ NlmToLensConverter.Prototype = function () {
             console.info("NOTE: skipping section without content:", title ? title.innerHTML : "no title");
         }
 
+
         // popping the section level
         state.sectionLevel--;
         return nodes;
@@ -1640,7 +1663,6 @@ NlmToLensConverter.Prototype = function () {
         "supplementary-material": true,
         "fig": true,
         "fig-group": true,
-        //"table-wrap": true,
         "media": true,
 
     };
@@ -1712,15 +1734,22 @@ NlmToLensConverter.Prototype = function () {
         var blocks = this.segmentParagraphElements(paragraph);
         for (var i = 0; i < blocks.length; i++) {
             var block = blocks[i];
+
+
             var node;
             if (block.handler === "paragraph") {
                 node = this.paragraph(state, block.nodes);
-                if (node) node.source_id = paragraph.getAttribute("id");
+                if (node) {
+                    node.source_id = paragraph.getAttribute("id");
+                    node.attributes = paragraph.attributes;
+                }
+                ;
             } else {
                 node = this[block.handler](state, block.node);
             }
             if (node) nodes.push(node);
         }
+
         return nodes;
     };
 
@@ -1941,7 +1970,7 @@ NlmToLensConverter.Prototype = function () {
         var url = mediaEl ? mediaEl.getAttribute("xlink:href") : null;
         var doi = supplement.querySelector("object-id[pub-id-type='doi']");
         //doi = doi ? "http://dx.doi.org/" + doi.textContent : "";
-        doi = doi ? doi.textContent : "";
+        doi = doi ?  doi.textContent : "";
 
         //create supplement node using file ids
         var supplementNode = {
@@ -2058,37 +2087,74 @@ NlmToLensConverter.Prototype = function () {
     };
 
     this.tableWrap = function (state, tableWrap) {
+
         var doc = state.doc;
         var label = tableWrap.querySelector("label");
+        var table = tableWrap.querySelector("table");
+        var content = {};
+        var trs = {};
+        var tds = {};
+        var prs = {};
+        var _trs = table.children;
+
+       for (var i = 0; i < _trs.length; i++) {
+            var _tds = _trs[i].children;
+            for (var j = 0; j < _tds.length; j++) {
+                var childNodes = _tds[j].childNodes;
+
+                for (var k = 0; k < childNodes.length; k++) {
+                    var child = childNodes[k];
+                    tds[k] ={}
+                    if (child.nodeName === '#text') {
+                        var textCotent = child.data.trim();
+                        if (textCotent.length > 0) {
+                            var p = document.createElement('p');
+                            var t = document.createTextNode(textCotent);
+                            p.appendChild(t);
+                            tds[k].nodes = this.paragraphGroup(state, p);
+                        }
+                    }
+
+                    else if (child.nodeName === 'p') {
+
+                        tds[k].nodes = this.paragraphGroup(state, child);
 
 
-        var childNodes = this.bodyNodes(state, util.dom.getChildren(tableWrap));
+                    }
+                    else {
+                        console.error(' element not allowed in table', child);
+                    }
+                    tds[k].attributes = _tds[j].attributes;
+
+                }
+                trs[j] = tds;
+                tds = {};
+            }
+            content[i] = trs;
+            trs = {};
+
+        }
+
+
         var tableNode = {
             "id": state.nextId("html_table"),
             "source_id": tableWrap.getAttribute("id"),
             "type": "html_table",
             "title": "",
             "label": label ? label.textContent : "Table",
-            "children": "",
+            "children": content,
+            "html_table_attributes": table.attributes,
             "caption": null,
             footers: [],
-            // doi: "" needed?
-        };
-        // Note: using a DOM div element to create HTML
-        var content = {};
-        var table = tableWrap.querySelector("table");
-        var trs = table.querySelectorAll("tr");
-        for (var i = 0; i < trs.length; i++) {
-            content[i] = this.bodyNodes(state, util.dom.getChildren(trs[i]));
-        }
 
-        if (table) {
-            tableNode.children = content;
-        }
+        };
+       // TODO table node:
+
         this.extractTableCaption(state, tableNode, tableWrap);
 
         this.enhanceTable(state, tableNode, tableWrap);
         doc.create(tableNode);
+
         return tableNode;
     };
 
@@ -2103,8 +2169,8 @@ NlmToLensConverter.Prototype = function () {
         }
     };
 
-    // Formula Node Type
-    // --------
+// Formula Node Type
+// --------
 
     this._getFormulaData = function (formulaElement) {
         var result = [];
@@ -2182,25 +2248,31 @@ NlmToLensConverter.Prototype = function () {
 
     this.fn = function (state, fn) {
         var children = util.dom.getChildren(fn);
+        this.footnote(state, fn, children);
         for (var i = 0; i < children.length; i++) {
             var child = children[i];
             var type = util.dom.getNodeType(child);
             var nodes = this.paragraph(state, fn, child);
-            if (this.rererenceTypes[type]) {
-                this.footnote(state, fn, child);
+         //   console.log('converte fn',fn);
+            /**
+             if (this.rererenceTypes[type]) {
+
             } else if (type === "label") {
                 // TODO: could we do something useful with it?
             } else {
                 console.error("Not supported in 'fn': ", type);
             }
+             */
         }
+
     };
 
     this.footnote = function (state, fn, footnote) {
+        //console.log('calling footnode', footnote);
         var doc = state.doc;
         var footnoteNode;
-        var i, j;
-
+        var i, j, k;
+        var blocks = [];
         var id = state.nextId("article_footnote");
 
 
@@ -2219,28 +2291,42 @@ NlmToLensConverter.Prototype = function () {
             "citation_urls": []
         }
 
-        var blocks = this.segmentParagraphElements(footnote);
+
+        for (k = 0; k < footnote.length; k++) {
+            //console.log(footnote[k]);
+            //console.log(this.segmentParagraphElements(footnote[k])[0]);
+
+            blocks.push(this.segmentParagraphElements(footnote[k])[0]);
+
+        }
+        //console.log(blocks);
+        //var blocks = this.segmentParagraphElements(footnote);
 
         for (i = 0; i < blocks.length; i++) {
             var block = blocks[i];
             for (j = 0; j < block.nodes.length; j++) {
                 if (block.nodes[j].tagName == 'xref') {
+                    //console.log("block", block);
                     var sourceId = block.nodes[j].getAttribute("rid");
+                    //console.log("sourceId",sourceId);
                     var targetNode = state.doc.getNodeBySourceId(sourceId);
+                    //console.log("targetNode",targetNode);
                     if (targetNode !== undefined) {
                         block.nodes[j].target = targetNode.properties.id;
                     }
                 }
             }
         }
+        ////console.log('foonote blocks', blocks);
         footnoteNode.text = blocks;
+        //console.log("fn",footnoteNode);
         doc.create(footnoteNode);
         doc.show("footnotes", id);
         return footnoteNode;
     };
 
-    // Citations
-    // ---------
+// Citations
+// ---------
 
     this.citationTypes = {
         "mixed-citation": true,
@@ -2271,35 +2357,35 @@ NlmToLensConverter.Prototype = function () {
         }
     };
 
-    // Citation
-    // ------------------
-    // NLM input example
-    //
-    // <element-citation publication-type="journal" publication-format="print">
-    // <name><surname>Llanos De La Torre Quiralte</surname>
-    // <given-names>M</given-names></name>
-    // <name><surname>Garijo Ayestaran</surname>
-    // <given-names>M</given-names></name>
-    // <name><surname>Poch Olive</surname>
-    // <given-names>ML</given-names></name>
-    // <article-title xml:lang="es">Evolucion de la mortalidad
-    // infantil de La Rioja (1980-1998)</article-title>
-    // <trans-title xml:lang="en">Evolution of the infant
-    // mortality rate in la Rioja in Spain
-    // (1980-1998)</trans-title>
-    // <source>An Esp Pediatr</source>
-    // <year>2001</year>
-    // <month>Nov</month>
-    // <volume>55</volume>
-    // <issue>5</issue>
-    // <fpage>413</fpage>
-    // <lpage>420</lpage>
-    // <comment>Figura 3, Tendencia de mortalidad infantil
-    // [Figure 3, Trends in infant mortality]; p. 418.
-    // Spanish</comment>
-    // </element-citation>
+// Citation
+// ------------------
+// NLM input example
+//
+// <element-citation publication-type="journal" publication-format="print">
+// <name><surname>Llanos De La Torre Quiralte</surname>
+// <given-names>M</given-names></name>
+// <name><surname>Garijo Ayestaran</surname>
+// <given-names>M</given-names></name>
+// <name><surname>Poch Olive</surname>
+// <given-names>ML</given-names></name>
+// <article-title xml:lang="es">Evolucion de la mortalidad
+// infantil de La Rioja (1980-1998)</article-title>
+// <trans-title xml:lang="en">Evolution of the infant
+// mortality rate in la Rioja in Spain
+// (1980-1998)</trans-title>
+// <source>An Esp Pediatr</source>
+// <year>2001</year>
+// <month>Nov</month>
+// <volume>55</volume>
+// <issue>5</issue>
+// <fpage>413</fpage>
+// <lpage>420</lpage>
+// <comment>Figura 3, Tendencia de mortalidad infantil
+// [Figure 3, Trends in infant mortality]; p. 418.
+// Spanish</comment>
+// </element-citation>
 
-    // TODO: is implemented naively, should be implemented considering the NLM spec
+// TODO: is implemented naively, should be implemented considering the NLM spec
     this.citation = function (state, ref, citation) {
         var doc = state.doc;
         var citationNode;
@@ -2385,8 +2471,9 @@ NlmToLensConverter.Prototype = function () {
             if (label) citationNode.label = label.textContent;
 
             var doi = citation.querySelector("pub-id[pub-id-type='doi'], ext-link[ext-link-type='doi']");
+
             //if (doi) citationNode.doi = "http://dx.doi.org/" + doi.textContent;
-            if (doi) citationNode.doi = doi.textContent;
+            if (doi) citationNode.doi =  doi.textContent;
         } else {
             var blocks = this.segmentParagraphElements(citation);
             var i, j;
@@ -2416,15 +2503,15 @@ NlmToLensConverter.Prototype = function () {
 
 
         }
-
+        //console.log("citationNode", citationNode);
         doc.create(citationNode);
         doc.show("citations", id);
 
         return citationNode;
     };
 
-    // Article.Back
-    // --------
+// Article.Back
+// --------
 
     this.back = function (/*state, back*/) {
         // No processing at the moment
@@ -2432,8 +2519,8 @@ NlmToLensConverter.Prototype = function () {
     };
 
 
-    // Annotations
-    // -----------
+// Annotations
+// -----------
 
     this.createAnnotation = function (state, el, start, end) {
         // do not create an annotaiton if there is no range
@@ -2452,7 +2539,7 @@ NlmToLensConverter.Prototype = function () {
         state.annotations.push(anno);
     };
 
-    // Called for annotation types registered in this._annotationTypes
+// Called for annotation types registered in this._annotationTypes
     this.addAnnotationData = function (state, anno, el, type) {
         anno.type = this._annotationTypes[type] || "annotation";
         if (type === 'xref') {
@@ -2477,20 +2564,21 @@ NlmToLensConverter.Prototype = function () {
             anno.target = formula.id;
         }
     };
-
     this.addAnnotationDataForXref = function (state, anno, el) {
+
         var refType = el.getAttribute("ref-type");
         var sourceId = el.getAttribute("rid");
 
         // Default reference is a cross_reference
         anno.type = this._refTypeMapping[refType] || "cross_reference";
+        //console.log("anno",anno);
         if (sourceId) anno.target = sourceId;
     };
 
-    // Parse annotated text
-    // --------------------
-    // Make sure you call this method only for nodes where `this.isParagraphish(node) === true`
-    //
+// Parse annotated text
+// --------------------
+// Make sure you call this method only for nodes where `this.isParagraphish(node) === true`
+//
     this.annotatedText = function (state, node, path, options) {
         options = options || {};
         state.stack.push({
@@ -2503,11 +2591,11 @@ NlmToLensConverter.Prototype = function () {
         return text;
     };
 
-    // Internal function for parsing annotated text
-    // --------------------------------------------
-    // As annotations are nested this is a bit more involved and meant for
-    // internal use only.
-    //
+// Internal function for parsing annotated text
+// --------------------------------------------
+// As annotations are nested this is a bit more involved and meant for
+// internal use only.
+//
     this._annotatedText = function (state, iterator, options) {
         var plainText = "";
 
@@ -2565,12 +2653,12 @@ NlmToLensConverter.Prototype = function () {
         return plainText;
     };
 
-    // A place to register handlers to override how the text of an annotation is created.
-    // The default implementation is this._getAnnotationText() which extracts the plain text and creates
-    // nested annotations if necessary.
-    // Examples for other implementations:
-    //   - links: the label of a link may be shortened in certain cases
-    //   - inline elements: we model inline elements by a pair of annotation and a content node, and we create a custom label.
+// A place to register handlers to override how the text of an annotation is created.
+// The default implementation is this._getAnnotationText() which extracts the plain text and creates
+// nested annotations if necessary.
+// Examples for other implementations:
+//   - links: the label of a link may be shortened in certain cases
+//   - inline elements: we model inline elements by a pair of annotation and a content node, and we create a custom label.
 
     this._annotationTextHandler = {};
 
@@ -2619,9 +2707,9 @@ NlmToLensConverter.Prototype = function () {
     };
 
 
-    // Configureable methods
-    // -----------------
-    //
+// Configureable methods
+// -----------------
+//
 
     this.getBaseURL = function (state) {
         // Use xml:base attribute if present
@@ -2651,7 +2739,7 @@ NlmToLensConverter.Prototype = function () {
         // Noop - override in custom converter
     };
 
-    // Implements resolving of relative urls
+// Implements resolving of relative urls
     this.enhanceFigure = function (state, node, element) {
         var graphic = element.querySelector("graphic");
         var url = graphic.getAttribute("xlink:href");
@@ -2673,9 +2761,9 @@ NlmToLensConverter.Prototype = function () {
         // Noop - override in custom converter
     };
 
-    // Default video resolver
-    // --------
-    //
+// Default video resolver
+// --------
+//
 
     this.enhanceVideo = function (state, node, element) {
         // xlink:href example: elife00778v001.mov
@@ -2686,7 +2774,7 @@ NlmToLensConverter.Prototype = function () {
         if (url.match(/http[s]*:/)) {
 
             var lastdotIdx = url.lastIndexOf(".");
-            if ((url.length - lastdotIdx === 5 ) || (url.length - lastdotIdx === 4)) {
+            if ((url.length - lastdotIdx === 5) || (url.length - lastdotIdx === 4)) {
                 name = url.substring(0, lastdotIdx);
                 node.url = name + ".mp4";
                 node.url_ogv = name + ".ogv";
@@ -2710,10 +2798,10 @@ NlmToLensConverter.Prototype = function () {
         }
     };
 
-    // Default figure url resolver
-    // --------
-    //
-    // For relative urls it uses the same basebath as the source XML
+// Default figure url resolver
+// --------
+//
+// For relative urls it uses the same basebath as the source XML
 
     this.resolveURL = function (state, url) {
         // Just return absolute urls
@@ -2742,7 +2830,8 @@ NlmToLensConverter.Prototype = function () {
         state.doc.show(view, node.id);
     };
 
-};
+}
+;
 
 NlmToLensConverter.State = function (converter, xmlDoc, doc) {
     var self = this;
