@@ -22,6 +22,7 @@ TOCView.Prototype = function() {
   // --------
 
   this.render = function() {
+
     var lastLevel = -1;
     var tocNodes = this.doc.getTocNodes();
     // don't render if only 2 sections

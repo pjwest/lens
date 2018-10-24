@@ -91,8 +91,7 @@ PanelView.Prototype = function() {
   };
 
   this.addHighlight = function(id, cssClass) {
-    // console.log("Add highlight for", id, cssClass);
-    var nodeEl = this.findNodeView(id);
+        var nodeEl = this.findNodeView(id);
     if (nodeEl) {
       var $nodeEl = $(nodeEl);
       $nodeEl.addClass(cssClass);
@@ -104,8 +103,7 @@ PanelView.Prototype = function() {
   };
 
   this.removeHighlights = function() {
-    // console.log("Removing highlights from panel ", this.name);
-    for (var i = 0; i < this.highlightedNodes.length; i++) {
+        for (var i = 0; i < this.highlightedNodes.length; i++) {
       var highlighted = this.highlightedNodes[i];
       highlighted.$el.removeClass(highlighted.cssClass);
     }

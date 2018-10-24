@@ -85,6 +85,7 @@ CoverView.Prototype = function() {
 
     if (pubInfo) {
       var pubDate = pubInfo.published_on;
+      console.log("pubDate",pubDate);
       var articleType = pubInfo.article_type;
       if (pubDate) {
         var items = [articleUtil.formatDate(pubDate)];

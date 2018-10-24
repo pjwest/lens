@@ -44,21 +44,21 @@ CitationView.Prototype = function () {
                 if (text[j].tagName == 'italic') {
                     italic = document.createElement('span');
                     italic.className = "citation-italic";
-                    italic.innerHTML = text[j].innerHTML;
+                    italic.innerHTML = text[j].textContent;
                     div.appendChild(italic);
                 }
                 else if (text[j].tagName == 'xref' && text[j].getAttribute('ref-type') === "sec") {
                     xref = document.createElement("a");
                     xref.className = "annotation cross_reference cross-reference";
                     xref.setAttribute("data-id", text[j].target);
-                    xref.innerHTML = text[j].innerHTML;
+                    xref.innerHTML = text[j].textContent;
                     div.appendChild(xref);
 
                 }
                 else if (text[j].tagName == 'xref' && text[j].getAttribute('ref-type') === "bibr") {
                     xref = document.createElement("a");
                     xref.setAttribute("href", '#citations/'+text[j].target);
-                    xref.innerHTML = text[j].innerHTML;
+                    xref.innerHTML = text[j].textContent;
                     div.appendChild(xref);
 
                 }
@@ -71,7 +71,7 @@ CitationView.Prototype = function () {
                         xref.setAttribute("target", "_blank");
                         var href = text[j].getAttributeNodeNS("http://www.w3.org/1999/xlink", "href")
                         if (href) {
-                            xref.innerHTML = text[j].innerHTML;
+                            xref.innerHTML = text[j].textContent;
                             xref.setAttribute("href", href.textContent);
                         }
 

@@ -37,7 +37,7 @@ MixedCitationView.Prototype = function () {
                 if (text[i].tagName == 'italic') {
                     italic = document.createElement('span');
                     italic.className = "citation-italic";
-                    italic.innerHTML = text[i].innerHTML;
+                    italic.innerHTML = text[i].textContent;
                     frag.appendChild(italic);
                 }
                 else {
@@ -47,7 +47,7 @@ MixedCitationView.Prototype = function () {
                         xref.setAttribute("href", text[i]);
                         var href = text[i].getAttributeNodeNS("http://www.w3.org/1999/xlink", "href")
                         if (href) {
-                            xref.innerHTML = text[i].innerHTML;
+                            xref.innerHTML = text[i].textContent;
                             xref.setAttribute("href", href.textContent);
                         }
                         xref.setAttribute("target","_blank");

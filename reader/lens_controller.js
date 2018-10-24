@@ -121,6 +121,7 @@ LensController.Prototype = function() {
     };
 
     // Already loaded?
+
     if (this.reader) {
       this.reader.modifyState(state);
     } else if (this.config.document_url === "lens_article.xml") {

@@ -341,8 +341,7 @@ MathConverter.Prototype = function MathConverterPrototype() {
           console.error('Unsupported formula element of type ' + type);
       }
     }
-    // console.log("Extracted labels for formula", formulaId, labels);
-    // do some bookkeeping to be able to look up formulas via label (for formula_references)
+        // do some bookkeeping to be able to look up formulas via label (for formula_references)
     labels = _.extend(labels.tex, labels.svg, labels.math);
     _.extend(state.labels, labels);
     _.each(labels, function(l) {
@@ -688,7 +687,7 @@ MathConverter.Prototype = function MathConverterPrototype() {
           if (targetNode) {
             anno.target = targetNode.id;
           } else {
-            console.log("Could not lookup targetNode for annotation", anno);
+            console.log("Could not lookup targetNode for annotation", anno.target);
           }
         }
       }

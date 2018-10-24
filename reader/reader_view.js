@@ -125,9 +125,7 @@ ReaderView.Prototype = function () {
         var minw = parseInt((A + B + Z) * 10 / 100, 10);
 
         var offset = $('.scrollbar-cover').offset();
-        console.log($(".surface.resource-view.content"));
         var E = $(".surface.resource-view.content");
-        console.log(A, B, Z, minw,offset);
 
         function getAllMethods(object) {
             return Object.getOwnPropertyNames(object).filter(function(property) {
@@ -135,7 +133,6 @@ ReaderView.Prototype = function () {
             });
         }
 
-        //console.log(getAllMethods(E));
 
     /**
         $(".scrollbar-cover").draggable({
@@ -194,8 +191,7 @@ ReaderView.Prototype = function () {
         resourcesViewEl.appendChild(this.tocView.render().el);
         _.each(this.readerCtrl.panels, function (panel) {
             var panelView = this.panelViews[panel.getName()];
-            // console.log('Rendering panel "%s"', name);
-            resourcesViewEl.appendChild(panelView.render().el);
+                        resourcesViewEl.appendChild(panelView.render().el);
         }, this);
 
         var menuBar = $$('.menu-bar');

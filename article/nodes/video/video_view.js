@@ -33,7 +33,6 @@ VideoView.Prototype = function() {
     //
 
     var node = this.node;
-    //console.log('video node', node);
 
     // The actual video
     // --------
@@ -95,7 +94,6 @@ VideoView.Prototype = function() {
     // Add DOI link if available
     // --------
     //
-    //  console.log('video', this);
 
     if (node.doi) {
       this.content.appendChild($$('.doi', {
