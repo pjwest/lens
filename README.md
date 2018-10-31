@@ -355,4 +355,3 @@ Thanks go to the following people, who made Lens possible:
 - Ian Hamilton (design)
 - John Sack (guidance)
 - Greg Schwartz (content variation)
-

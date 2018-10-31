@@ -6,8 +6,6 @@ var NodeView = require("../node").View;
 var ResourceView = require('../../resource_view');
 
 // Lens.Citation.View
-// ==========================================================================
-
 
 var CitationView = function (node, viewFactory, options) {
     NodeView.apply(this, arguments);

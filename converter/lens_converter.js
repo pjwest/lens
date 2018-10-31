@@ -952,6 +952,7 @@ NlmToLensConverter.Prototype = function () {
         if (fnList) {
             this.fnList(state, fnList);
         }
+
     };
 
     // articleIds: array of <article-id> elements
@@ -1949,7 +1950,7 @@ NlmToLensConverter.Prototype = function () {
         }
     };
     this.footnote = function (state, fn, footnote) {
-                var doc = state.doc;
+        var doc = state.doc;
         var footnoteNode;
         var i, j, k;
         var blocks = [];
@@ -1971,23 +1972,23 @@ NlmToLensConverter.Prototype = function () {
         }
 
         for (k = 0; k < footnote.length; k++) {
-                                    blocks.push(this.segmentParagraphElements(footnote[k])[0]);
+            blocks.push(this.segmentParagraphElements(footnote[k])[0]);
         }
-                //var blocks = this.segmentParagraphElements(footnote);
+
         for (i = 0; i < blocks.length; i++) {
             var block = blocks[i];
             for (j = 0; j < block.nodes.length; j++) {
                 if (block.nodes[j].tagName == 'xref') {
-                                        var sourceId = block.nodes[j].getAttribute("rid");
-                                        var targetNode = state.doc.getNodeBySourceId(sourceId);
-                                        if (targetNode !== undefined) {
+                    var sourceId = block.nodes[j].getAttribute("rid");
+                    var targetNode = state.doc.getNodeBySourceId(sourceId);
+                    if (targetNode !== undefined) {
                         block.nodes[j].target = targetNode.properties.id;
                     }
                 }
             }
         }
-        //        footnoteNode.text = blocks;
-                doc.create(footnoteNode);
+        footnoteNode.text = blocks;
+        doc.create(footnoteNode);
         doc.show("footnotes", id);
         return footnoteNode;
     };
@@ -2496,7 +2497,6 @@ NlmToLensConverter.State = function (converter, xmlDoc, doc) {
         // this state is only kept for one call
         this.skipWS = false;
         text = text.replace(WS_RIGHT, SPACE);
-        // EXPERIMENTAL: also remove white-space within
         if (this.options.REMOVE_INNER_WS) {
             text = text.replace(WS_ALL, SPACE);
         }
