@@ -3,3 +3,4 @@
 *.sublime-*
 dist/*
 .idea/*
+gulpfile.js

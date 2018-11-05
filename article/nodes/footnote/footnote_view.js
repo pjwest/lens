@@ -24,68 +24,66 @@ CitationView.Prototype = function () {
     this.renderBody = function () {
         var frag = document.createDocumentFragment();
         var node = this.node;
-        var i,j;
+        var i, j;
 
 
         // Add text
         // -------
         //
-        var italic, xref;
+        var xref;
 
         var texts = node.properties.text;
 
-    for (i=0; i< texts.length; i++) {
-        var text = texts[i].nodes;
-        var div= document.createElement("div");
-        if (text !== undefined) {
-            for (j = 0; j < text.length; j++) {
-                if (text[j].tagName == 'italic') {
-                    italic = document.createElement('span');
-                    italic.className = "citation-italic";
-                    italic.innerHTML = text[j].textContent;
-                    div.appendChild(italic);
-                }
-                else if (text[j].tagName == 'xref' && text[j].getAttribute('ref-type') === "sec") {
-                    xref = document.createElement("a");
-                    xref.className = "annotation cross_reference cross-reference";
-                    xref.setAttribute("data-id", text[j].target);
-                    xref.innerHTML = text[j].textContent;
-                    div.appendChild(xref);
+        function createElement(t, type, cls) {
+            var elem = document.createElement(type);
+            elem.className = cls;
+            elem.innerHTML = t.textContent;
+            if (t.target !== undefined) elem.setAttribute("data-id", t.target);
+            return elem;
+        }
 
-                }
-                else if (text[j].tagName == 'xref' && text[j].getAttribute('ref-type') === "bibr") {
-                    xref = document.createElement("a");
-                    xref.setAttribute("href", '#citations/'+text[j].target);
-                    xref.innerHTML = text[j].textContent;
-                    div.appendChild(xref);
+        for (i = 0; i < texts.length; i++) {
+            var text = texts[i].nodes;
+            var div = document.createElement("div");
+            if (text !== undefined) {
+                for (j = 0; j < text.length; j++) {
+                    if (text[j].tagName == 'italic') {
+                        div.appendChild(createElement(text[j], 'span', 'citation-italic'));
+                    }
+                    else if (text[j].tagName == 'xref' && text[j].getAttribute('ref-type') === "sec") {
+                        div.appendChild(createElement(text[j], 'a', 'annotation cross_reference cross-reference'));
 
-                }
-                else {
-                    if (text[j].tagName == 'ext-link') {
-
-                        xref = document.createElement("a");
-                        xref.className = "content-node link";
-                        xref.setAttribute("href", text[j]);
-                        xref.setAttribute("target", "_blank");
-                        var href = text[j].getAttributeNodeNS("http://www.w3.org/1999/xlink", "href")
-                        if (href) {
-                            xref.innerHTML = text[j].textContent;
-                            xref.setAttribute("href", href.textContent);
-                        }
-
+                    }
+                    else if (text[j].tagName == 'xref' && text[j].getAttribute('ref-type') === "bibr") {
+                        xref = createElement(text[j], 'a', '');
+                        xref.setAttribute("href", '#citations/' + text[j].target);
                         div.appendChild(xref);
 
                     }
                     else {
-                        div.appendChild(text[j]);
+                        if (text[j].tagName == 'ext-link') {
+
+                            xref = createElement(text[j], 'a', 'content-node link');
+                            xref.setAttribute("href", text[j]);
+                            xref.setAttribute("target", "_blank");
+                            var href = text[j].getAttributeNodeNS("http://www.w3.org/1999/xlink", "href")
+                            if (href) {
+                                xref.innerHTML = text[j].textContent;
+                                xref.setAttribute("href", href.textContent);
+                            }
+
+                            div.appendChild(xref);
+
+                        }
+                        else {
+                            div.appendChild(text[j]);
+                        }
+
                     }
-
                 }
+                frag.appendChild(div);
             }
-            frag.appendChild(div);
         }
-    }
-
 
 
         // Add Authors
