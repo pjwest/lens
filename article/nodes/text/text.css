@@ -18,3 +18,7 @@
 .content-node.text.focussed {
   background-color: grey;
 }
+
+.content-node.text.title {
+  padding-left: 0;
+}

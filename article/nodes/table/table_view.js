@@ -15,9 +15,9 @@ HTMLTableView.Prototype = function () {
     this.render = function () {
 
         NodeView.prototype.render.call(this);
-        var i, childView, childViewEl, htmlTable, row, tr, td;
+        var childView, childViewEl, htmlTable, row,  td;
         htmlTable = document.createElement('table');
-        var attrs = this.node.properties.html_table_attributes;
+        var attrs = this.node.properties.table_attributes;
         if (attrs.length > 0) {
             for (var k=0; k < attrs.length; k++) {
                 htmlTable.setAttribute(attrs[k].nodeName, attrs[k].nodeValue);
@@ -45,7 +45,7 @@ HTMLTableView.Prototype = function () {
                         var cell_nodes = cell[j].nodes;
                         var attr = cell[j].attributes;
                         if (cell_nodes !== undefined) {
-                            for (var k = 0; k < cell_nodes.length; k++) {
+                            for (k = 0; k < cell_nodes.length; k++) {
                                 childView = this.createChildView(cell_nodes[k].id);
                                 childViewEl = childView.render().el;
                                 td.appendChild(childViewEl);

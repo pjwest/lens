@@ -37,6 +37,7 @@ FigureView.Prototype = function() {
           $$("a", {
             href: this.node.url,
             target: "_blank",
+            class: "toggle toggle-fullscreen",
             children: [$$("img", {src: this.node.url})]
           })
         ]

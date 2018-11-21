@@ -4,6 +4,9 @@ var _ = require('underscore');
 var $$ = require("../../../substance/application").$$;
 var NodeView = require("../node").View;
 var ResourceView = require('../../resource_view');
+var util = require("../../../substance/util");
+var TableView = require('../table/table_view');
+
 
 // Lens.Citation.View
 
@@ -12,6 +15,7 @@ var CitationView = function (node, viewFactory, options) {
 
     // Mix-in
     ResourceView.call(this, options);
+
 
 };
 
@@ -24,15 +28,13 @@ CitationView.Prototype = function () {
     this.renderBody = function () {
         var frag = document.createDocumentFragment();
         var node = this.node;
-        var i, j;
-
-
-        // Add text
-        // -------
-        //
+        var i, k;
         var xref;
+        var div;
+
 
         var texts = node.properties.text;
+
 
         function createElement(t, type, cls) {
             var elem = document.createElement(type);
@@ -42,46 +44,63 @@ CitationView.Prototype = function () {
             return elem;
         }
 
+
         for (i = 0; i < texts.length; i++) {
-            var text = texts[i].nodes;
-            var div = document.createElement("div");
-            if (text !== undefined) {
-                for (j = 0; j < text.length; j++) {
-                    if (text[j].tagName == 'italic') {
-                        div.appendChild(createElement(text[j], 'span', 'citation-italic'));
-                    }
-                    else if (text[j].tagName == 'xref' && text[j].getAttribute('ref-type') === "sec") {
-                        div.appendChild(createElement(text[j], 'a', 'annotation cross_reference cross-reference'));
+            var x = texts[i];
+            for (var j = 0; j < x.length; j++) {
+                var part = x[j];
 
-                    }
-                    else if (text[j].tagName == 'xref' && text[j].getAttribute('ref-type') === "bibr") {
-                        xref = createElement(text[j], 'a', '');
-                        xref.setAttribute("href", '#citations/' + text[j].target);
-                        div.appendChild(xref);
-
-                    }
-                    else {
-                        if (text[j].tagName == 'ext-link') {
-
-                            xref = createElement(text[j], 'a', 'content-node link');
-                            xref.setAttribute("href", text[j]);
-                            xref.setAttribute("target", "_blank");
-                            var href = text[j].getAttributeNodeNS("http://www.w3.org/1999/xlink", "href")
-                            if (href) {
-                                xref.innerHTML = text[j].textContent;
-                                xref.setAttribute("href", href.textContent);
+                if (part !== undefined) {
+                    div = document.createElement("div");
+                    if (part.handler === 'paragraph') {
+                        part = part.nodes;
+                        for (k = 0; k < part.length; k++) {
+                            if (part[k].tagName == 'italic') {
+                                div.appendChild(createElement(part[k], 'span', 'citation-italic'));
                             }
+                            else if (part[k].tagName == 'xref' && part[k].getAttribute('ref-type') === "sec") {
+                                div.appendChild(createElement(part[k], 'a', 'annotation cross_reference cross-reference'));
+                            }
+                            else if (part[k].tagName == 'xref' && part[k].getAttribute('ref-type') === "bibr") {
+                                xref = createElement(part[k], 'a', '');
+                                xref.setAttribute("href", '#citations/' + part[k].target);
+                                div.appendChild(xref);
+                            }
+                            else {
+                                if (part[k].tagName == 'ext-link') {
+                                    xref = createElement(part[k], 'a', 'content-node link');
+                                    xref.setAttribute("href", part[k]);
+                                    xref.setAttribute("target", "_blank");
+                                    var href = part[k].getAttributeNodeNS("http://www.w3.org/1999/xlink", "href")
+                                    if (href) {
+                                        xref.innerHTML = part[k].textContent;
+                                        xref.setAttribute("href", href.textContent);
+                                    }
+                                    div.appendChild(xref);
+                                }
+                                else {
+                                    div.appendChild(part[k]);
+                                }
 
-                            div.appendChild(xref);
 
-                        }
-                        else {
-                            div.appendChild(text[j]);
+                            }
                         }
 
                     }
+                    else if (part.handler === 'tableWrap') {
+
+                        var children = util.dom.getChildren(part.node);
+                        if (children[0]) {
+                            var table = document.createElement('table');
+                            table.innerHTML =children[0].innerHTML;
+                            div.appendChild(table);
+
+                            //div.appendChild(children[0]);
+                        }
+
+                    }
+                    frag.appendChild(div);
                 }
-                frag.appendChild(div);
             }
         }
 

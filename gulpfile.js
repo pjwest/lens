@@ -1,7 +1,7 @@
 var gulp = require('gulp');
 
 gulp.task('default', function () {
-    gulp.src(['**/*.js'])
+    gulp.src(['**/*.*'])
         .pipe(gulp.dest('/home/wit/projects/UBHD-Lens/node_modules/lens'));
 });
 

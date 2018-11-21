@@ -40,7 +40,7 @@ module.exports = {
   "caption": require("./caption"),
   "image": require("./image"),
   "webresource": require("./web_resource"),
-  "html_table": require("./html_table"),
+  "table": require("./table"),
   "supplement": require("./supplement"),
   "video": require("./video"),
   "contributor": require("./contributor"),

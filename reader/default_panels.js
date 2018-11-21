@@ -4,7 +4,7 @@ var figuresPanel = new ContainerPanel({
   type: 'resource',
   name: 'figures',
   container: 'figures',
-  title: 'Multimedia',
+  title: 'Media',
   icon: 'fa-picture-o',
   references: ['figure_reference'],
   zoom: true,
@@ -42,7 +42,7 @@ var infoPanel = new ContainerPanel({
   type: 'resource',
   name: 'info',
   container: 'info',
-  title: 'Info',
+  title: '',
   icon: 'fa-info',
   references: ['contributor_reference'],
 });

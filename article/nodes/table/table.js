@@ -15,7 +15,7 @@ var HTMLTable = function (node, doc) {
 //
 
 HTMLTable.type = {
-    "id": "html_table",
+    "id": "table",
     "parent": "content",
     "properties": {
         "source_id": "string",
@@ -23,7 +23,7 @@ HTMLTable.type = {
         "children": "object",
         "footers": ["array", "string"],
         "caption": "caption",
-        "html_table_attributes":"object"
+        "table_attributes":"object"
     }
 };
 
@@ -46,7 +46,7 @@ HTMLTable.description = {
         "children": "object",
         "footers": "HTMLTable footers expressed as an array strings",
         "caption": "References a caption node, that has all the content",
-        "html_table_attributes": "Named Node map of attributes"
+        "table_attributes": "Named Node map of attributes"
     }
 };
 
@@ -56,8 +56,8 @@ HTMLTable.description = {
 //
 
 HTMLTable.example = {
-    "id": "html_table_1",
-    "type": "html_table",
+    "id": "table_1",
+    "type": "table",
     "label": "HTMLTable 1.",
     "title": "Lorem ipsum table",
     "children": "object",
