@@ -528,8 +528,7 @@ NlmToLensConverter.Prototype = function() {
         }
         return nodes;
     };
-
-  this.extractCover = function(state, article) {
+    this.extractCover = function (state, article) {
         var doc = state.doc;
         var docNode = doc.get("document");
         var articleMeta = article.querySelector("article-meta");
@@ -751,19 +750,17 @@ NlmToLensConverter.Prototype = function() {
         doc.show("info", contribNode.id);
         return contribNode;
     };
-
     this._getEqualContribs = function (state, contrib, contribId) {
         var result = [];
-    var refs = state.xmlDoc.querySelectorAll("xref[rid="+contribId+"]");
+        var refs = state.xmlDoc.querySelectorAll("xref[rid=" + contribId + "]");
         // Find xrefs within contrib elements
-    _.each(refs, function(ref) {
+        _.each(refs, function (ref) {
             var c = ref.parentNode;
             if (c !== contrib) result.push(this.getName(c.querySelector("name")));
         }, this);
         return result;
     };
-
-  this.extractContributorProperties = function(state, contrib, contribNode) {
+    this.extractContributorProperties = function (state, contrib, contribNode) {
         var doc = state.doc;
 
         // Extract equal contributors
@@ -982,8 +979,7 @@ NlmToLensConverter.Prototype = function() {
         this.extractFootnotes(state, article);
 
     };
-
-  this.extractDefinitions = function(state /*, article*/) {
+    this.extractDefinitions = function (state /*, article*/) {
         var defItems = state.xmlDoc.querySelectorAll("def-item");
 
     _.each(defItems, function(defItem) {
@@ -1083,7 +1079,8 @@ NlmToLensConverter.Prototype = function() {
         }
         this.show(state, nodes);
     };
-    this.extractCitations = function (state, xmlDoc) {
+
+  this.extractCitations = function(state, xmlDoc) {
         var refList = xmlDoc.querySelector("ref-list");
         if (refList) {
             this.refList(state, refList);
@@ -1163,18 +1160,28 @@ NlmToLensConverter.Prototype = function() {
       this.abstract(state, abs);
         }, this);
     };
-
-  this.abstract = function(state, abs) {
+    this._abstract = function (state, abs) {
+        var title = abs.querySelector("title");
         var doc = state.doc;
-    var nodes = [];
-
-    var title = abs.querySelector("title");
-
-    var heading = {
-      id: state.nextId("heading"),
-      type: "heading",
-      level: 1,
-      content: title ? title.textContent : "Abstract"
+        var abstractNode = {
+            id: state.nextId("abstract"),
+            type: "abstract",
+            label: "",
+            title: "",
+            children: []
+        }
+        if (title !== null) {
+            if (title.textContent.length > 0) {
+                var iterator = new util.dom.ChildNodeIterator(title);
+                while (iterator.hasNext()) {
+                    var child = iterator.next();
+                    var type = util.dom.getNodeType(child);
+                    // annotated text node
+                    if (type === "text" || this.isAnnotation(type)) {
+                        var textNode = {
+                            id: state.nextId("text"),
+                            type: "text",
+                            content: null
                         };
                     }
                 }
@@ -1284,8 +1291,8 @@ NlmToLensConverter.Prototype = function() {
   this._bodyNodes["boxed-text"] = function(state, child) {
         return this.boxedText(state, child);
     };
-  this._bodyNodes["disp-quote"] = function(state, child) {
-    return this.boxedText(state, child);
+    this._bodyNodes["disp-quote"] = function (state, child) {
+        return this.quoteText(state, child);
     };
   this._bodyNodes["attrib"] = function(state, child) {
         return this.paragraphGroup(state, child);
@@ -1384,8 +1391,66 @@ NlmToLensConverter.Prototype = function() {
         doc.create(boxNode);
         return boxNode;
     };
-
-  this.datasets = function(state, datasets) {
+    //this.speakerName = function (state, speech) {
+    // return {};
+    // }
+    this.childNodes = function (state, children) {
+        var nodes = [], node;
+        for (var i = 0; i < children.length; i++) {
+            var child = children[i];
+            var type = util.dom.getNodeType(child);
+            if (this.childNodes[type]) {
+                var result = this.childNodes[type].call(this, state, child);
+                if (_.isArray(result)) {
+                    nodes = nodes.concat(result);
+                } else if (result) {
+                    nodes.push(result);
+                } else {
+                    // skip
+                }
+            }
+        }
+        return nodes;
+    };
+    this.speakerName = function (state, speaker) {
+        var speakerName = {
+            "type": "speaker",
+            "label": "Speaker",
+            "children": speaker.innerHTML
+        };
+        return speakerName;
+    };
+    this.quoteText = function (state, quote) {
+        var doc = state.doc;
+        // Assuming that there are no nested <disp-quote> elements
+        var childNodes = this.bodyNodes(state, util.dom.getChildren(quote));
+        var quoteId = state.nextId("quote");
+        var quoteNode = {
+            "type": "quote",
+            "id": quoteId,
+            "source_id": quote.getAttribute("id"),
+            "label": "",
+            "children": _.pluck(childNodes, 'id')
+        };
+        doc.create(quoteNode);
+        return quoteNode;
+    };
+    this.speechText = function (state, speech) {
+        var doc = state.doc;
+        var childNodes = this.bodyNodes(state, util.dom.getChildren(speech));
+        var speechId = state.nextId("speech");
+        var speechNode = {
+            "type": "speech",
+            "id": speechId,
+            "source_id": speech.getAttribute("id"),
+            "label": "",
+            "speaker": speech.querySelectorAll("speaker"),
+            "children": _.pluck(childNodes, 'id')
+        };
+        doc.create(speechNode);
+        return speechNode;
+    };
+    this.datasets = function (state, datasets) {
         var nodes = [];
 
     for (var i=0;i<datasets.length;i++) {
@@ -1678,14 +1743,7 @@ NlmToLensConverter.Prototype = function() {
                     nodes.push(formula);
                 }
             }
-            else if (type === "table-wrap") {
-                console.log(this.tableWrap(state, child))
-                console.log("converter paragraph child  type handle ------->", child);
             }
-
-        }
-
-        //console.log("converter paragraph child --->", nodes);
 
         // return if there is no content
         if (nodes.length === 0) return null;
@@ -1730,8 +1788,7 @@ NlmToLensConverter.Prototype = function() {
             if (ltype === o_types[i]) {
                 listNode.ordered = true;
             }
-        }
-        listNode.list_type = list.getAttribute("list-type");
+
         var listItems = list.querySelectorAll("list-item");
         for (var i = 0; i < listItems.length; i++) {
             var listItem = listItems[i];
@@ -2701,10 +2758,7 @@ NlmToLensConverter.State = function(converter, xmlDoc, doc) {
         text = text.replace(TABS_OR_NL, "");
 
         if (this.lastChar === SPACE || this.skipWS) {
-            // ignores one space for empty table elements
-            if (text !== SPACE) {
-                text = text.replace(WS_LEFT_ALL, '');
-            }
+      text = text.replace(WS_LEFT_ALL, "");
         } else {
             text = text.replace(WS_LEFT, SPACE);
         }
@@ -2717,10 +2771,12 @@ NlmToLensConverter.State = function(converter, xmlDoc, doc) {
         if (this.options.REMOVE_INNER_WS) {
             text = text.replace(WS_ALL, SPACE);
         }
-        this.lastChar = text[text.length - 1] || this.lastChar;
+
+    this.lastChar = text[text.length-1] || this.lastChar;
         return text;
     };
-    this.top = function () {
+
+  this.top = function() {
         var top = _.last(self.stack);
         top = top || {};
         top.ignore = top.ignore || [];
