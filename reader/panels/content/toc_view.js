@@ -32,7 +32,7 @@ TOCView.Prototype = function() {
     var backLink = document.createElement('a');
     var linkUrl = '';
     backLink.setAttribute('href',linkUrl);
-    backLink.textContent =locales.Back;
+    backLink.textContent ="Back";
     backLinkContainer.appendChild(backLink);
    // this.el.appendChild(backLinkContainer);
 

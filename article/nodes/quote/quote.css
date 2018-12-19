@@ -5,8 +5,8 @@
 }
 
 .document .content-node.quote .content-node.paragraph {
-  padding: 10px 40px 10px 40px;
-  border-left: 3px solid #ccc;
+  padding: 0px 20px 0px 20px;
+  /*border-left: 3px solid #ccc; doppelte Ausgabe von Rändern bei Zitaten in Stille, Scholz ... 416/416-69-83162-1-10-20181203.xml*/
 }
 
 .surface.content .content-node.quote {

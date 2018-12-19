@@ -51,7 +51,7 @@ ResourceView.Prototype = function() {
       }
       togglesEl.appendChild($$('a.toggle-res.toggle.action-toggle-resource', {
         "href": "#",
-        "html": "<i class=\"fa fa-eye\"></i> "+locales.Focus
+        "html": "<i class=\"fa fa-eye\"></i> Focus"
       }));
       headerEl.appendChild(togglesEl);
 

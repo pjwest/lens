@@ -9,7 +9,7 @@ var ContentPanel = function() {
     type: "document",
     container: "content",
     label: 'Contents',
-    title: locales.Contents,
+    title: 'Contents',
     icon: 'fa-align-left',
   });
 };

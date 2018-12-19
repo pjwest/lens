@@ -5,7 +5,7 @@ var $$ = require("../../../substance/application").$$;
 var NodeView = require("../node").View;
 var ResourceView = require('../../resource_view');
 var util = require("../../../substance/util");
-var TableView = require('../table/table_view');
+
 
 
 // Lens.Citation.View
@@ -93,9 +93,9 @@ CitationView.Prototype = function () {
                         if (children[0]) {
                             var table = document.createElement('table');
                             table.innerHTML =children[0].innerHTML;
-                            div.appendChild(table);
+                            table.className="table";
+                            frag.appendChild(table);
 
-                            //div.appendChild(children[0]);
                         }
 
                     }

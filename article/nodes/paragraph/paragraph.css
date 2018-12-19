@@ -57,6 +57,12 @@
   margin-right: 2ex;
 }
 
+.content-node.paragraph.margin-left-2 {
+  margin-left: 4ex; }
+
+.content-node.paragraph.margin-right-2 {
+  margin-right: 4ex; }
+
 .content-node.paragraph.centered {
   text-align: center;
 }
@@ -214,3 +220,17 @@
   display: block !important;
   line-height: 28px !important;
 }
+
+/*** Abstand zw. zwei aufeinanderfolgenden Paragrafen im Fließtext sowie Unterdrückung dieses Abstands für <p> innerhalb von Tabellen und Zitaten 7.12.18 voe***/
+.content-node.paragraph + .content-node.paragraph {
+      margin-top: 0.7em;
+   }
+
+td > .content-node.paragraph + .content-node.paragraph {
+    margin-top: 0;
+  }
+/*.quote > .content .content-node.paragraph + .quote > .content .content-node.paragraph*/
+.quote > .content > .paragraph + .paragraph {
+     margin-top: 0 !important;
+   }
+

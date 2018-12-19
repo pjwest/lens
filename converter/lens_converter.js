@@ -1,13 +1,17 @@
 "use strict";
+
 var _ = require("underscore");
 var util = require("../substance/util");
 var errors = util.errors;
 var ImporterError = errors.define("ImporterError");
 var Article = require("../article");
-var NlmToLensConverter = function (options) {
+
+var NlmToLensConverter = function(options) {
     this.options = options || NlmToLensConverter.DefaultOptions;
 };
-NlmToLensConverter.Prototype = function () {
+
+NlmToLensConverter.Prototype = function() {
+
     this._annotationTypes = {
         "bold": "strong",
         "italic": "emphasis",
@@ -24,6 +28,7 @@ NlmToLensConverter.Prototype = function () {
         "inline-formula": "inline-formula",
         "uri": "link"
     };
+
     // mapping from xref.refType to node type
     this._refTypeMapping = {
         "bibr": "citation_reference",
@@ -34,6 +39,7 @@ NlmToLensConverter.Prototype = function () {
         "other": "figure_reference",
         "list": "definition_reference",
     };
+
     // mapping of contrib type to human readable names
     // Can be overriden in specialized converter
     this._contribTypeMapping = {
@@ -66,45 +72,56 @@ NlmToLensConverter.Prototype = function () {
         "section-editor": "Section Editor",
         "section-author": "Section Author"
     };
-    this.isAnnotation = function (type) {
+
+  this.isAnnotation = function(type) {
         return this._annotationTypes[type] !== undefined;
     };
-    this.isParagraphish = function (node) {
+
+  this.isParagraphish = function(node) {
         for (var i = 0; i < node.childNodes.length; i++) {
             var el = node.childNodes[i];
             if (el.nodeType !== Node.TEXT_NODE && !this.isAnnotation(el.tagName.toLowerCase())) return false;
         }
         return true;
     };
-    this.test = function (xml, documentUrl) {
+
+  this.test = function(xml, documentUrl) {
         /* jshint unused:false */
         return true;
     };
+
     // Helpers
     // --------
-    this.getName = function (nameEl) {
+
+  this.getName = function(nameEl) {
         if (!nameEl) return "N/A";
         var names = [];
+
         var surnameEl = nameEl.querySelector("surname");
         var givenNamesEl = nameEl.querySelector("given-names");
         var suffix = nameEl.querySelector("suffix");
+
         if (givenNamesEl) names.push(givenNamesEl.textContent);
         if (surnameEl) names.push(surnameEl.textContent);
         if (suffix) return [names.join(" "), suffix.textContent].join(", ");
+
         return names.join(" ");
     };
-    this.toHtml = function (el) {
+
+  this.toHtml = function(el) {
         if (!el) return "";
         var tmp = document.createElement("DIV");
         tmp.appendChild(el.cloneNode(true));
         return tmp.innerHTML;
     };
-    this.mmlToHtmlString = function (el) {
+
+  this.mmlToHtmlString = function(el) {
         var html = this.toHtml(el);
         html = html.replace(/<(\/)?mml:([^>]+)>/g, "<$1$2>");
         return html;
     };
-    this.selectDirectChildren = function (scopeEl, selector) {
+
+  this.selectDirectChildren = function(scopeEl, selector) {
         // Note: if the ':scope' pseudo class was supported by more browsers
         // it would be the correct selector based solution.
         // However, for now we do simple filtering.
@@ -116,57 +133,74 @@ NlmToLensConverter.Prototype = function () {
         }
         return result;
     };
+
     // ### The main entry point for starting an import
-    this.import = function (input) {
+
+  this.import = function(input) {
         var xmlDoc;
+
         // Note: when we are using jqueries get("<file>.xml") we
         // magically get a parsed XML document already
         if (_.isString(input)) {
             var parser = new DOMParser();
-            xmlDoc = parser.parseFromString(input, "text/xml");
+      xmlDoc = parser.parseFromString(input,"text/xml");
         } else {
             xmlDoc = input;
         }
+
         this.sanitizeXML(xmlDoc);
+
         // Creating the output Document via factore, so that it is possible to
         // create specialized NLMImporter later which would want to instantiate
         // a specialized Document type
         var doc = this.createDocument();
+
         // For debug purposes
         window.doc = doc;
+
         // A deliverable state which makes this importer stateless
         var state = this.createState(xmlDoc, doc);
+
         // Note: all other methods are called corresponding
         return this.document(state, xmlDoc);
     };
+
     // Sometimes we need to deal with unconsistent XML
     // When overwriting this function in your custom converter
     // you can solve those issues in a preprocessing step instead of adding
     // hacks in the main converter code
-    this.sanitizeXML = function (xmlDoc) {
+
+  this.sanitizeXML = function(xmlDoc) {
         /* jshint unused:false */
     };
-    this.createState = function (xmlDoc, doc) {
+
+  this.createState = function(xmlDoc, doc) {
         return new NlmToLensConverter.State(this, xmlDoc, doc);
     };
+
     // Overridden to create a Lens Article instance
-    this.createDocument = function () {
+  this.createDocument = function() {
+
         var doc = new Article();
         return doc;
     };
-    this.show = function (state, nodes) {
-        _.each(nodes, function (n) {
+
+  this.show = function(state, nodes) {
+    _.each(nodes, function(n) {
             this.showNode(state, n);
         }, this);
     };
-    this.extractDate = function (dateEl) {
+
+  this.extractDate = function(dateEl) {
         if (!dateEl) return null;
+
         var year = dateEl.querySelector("year");
         var month = dateEl.querySelector("month");
         var day = dateEl.querySelector("day");
         var res = (year !== null ? [year.textContent] : []);
         if (month) res.push(month.textContent);
         if (day) res.push(day.textContent);
+
         return res.join("-");
     };
     this.extractURLSuffix = function (url) {
@@ -175,24 +209,31 @@ NlmToLensConverter.Prototype = function () {
     }
     this.extractPublicationInfo = function (state, article) {
         var doc = state.doc;
+
         var articleMeta = article.querySelector("article-meta");
         var pubDate = articleMeta.querySelector("pub-date");
         var history = articleMeta.querySelectorAll("history date");
+
         // Journal title
         //
         var journalTitle = article.querySelector("journal-title");
+
         // DOI
         //
         // <article-id pub-id-type="doi">10.7554/eLife.00003</article-id>
         var articleDOI = article.querySelector("article-id[pub-id-type=doi]");
+
         // Related article if exists
         //
         // TODO: can't there be more than one?
         var relatedArticle = article.querySelector("related-article");
+
         // Article information
         var articleInfo = this.extractArticleInfo(state, article);
+
         // Create PublicationInfo node
         // ---------------
+
         var pubInfoNode = {
             "id": "publication_info",
             "type": "publication_info",
@@ -217,6 +258,7 @@ NlmToLensConverter.Prototype = function () {
             // TODO: this is in the schema, but seems to be unused
             "provider": "",
         };
+
         for (var i = 0; i < history.length; i++) {
             var dateEl = history[i];
             var historyEntry = {
@@ -225,18 +267,23 @@ NlmToLensConverter.Prototype = function () {
             };
             pubInfoNode.history.push(historyEntry);
         }
+
         doc.create(pubInfoNode);
         doc.show("info", pubInfoNode.id, 0);
+
         this.enhancePublicationInfo(state, pubInfoNode);
     };
-    this.extractArticleInfo = function (state, article) {
+
+  this.extractArticleInfo = function(state, article) {
         // Initialize the Article Info object
         var articleInfo = {
             "id": "articleinfo",
             "type": "paragraph",
         };
         var doc = state.doc;
+
         var nodes = [];
+
         // Reviewing editor
         nodes = nodes.concat(this.extractEditor(state, article));
         // Datasets
@@ -249,66 +296,78 @@ NlmToLensConverter.Prototype = function () {
         nodes = nodes.concat(this.extractCopyrightAndLicense(state, article));
         // Notes (Footnotes + Author notes)
         nodes = nodes.concat(this.extractNotes(state, article));
+
         articleInfo.children = nodes;
         doc.create(articleInfo);
+
         return articleInfo;
     };
+
     // Get reviewing editor
     // --------------
     // TODO: it is possible to have multiple editors. This does only show the first one
     //   However, this would be easy: just querySelectorAll and have 'Reviewing Editors' as heading when there are multiple nodes found
-    this.extractEditor = function (state, article) {
+
+  this.extractEditor = function(state, article) {
         var nodes = [];
         var doc = state.doc;
+
         var editor = article.querySelector("contrib[contrib-type=editor]");
         if (editor) {
             var content = [];
+
             var name = this.getName(editor.querySelector('name'));
             if (name) content.push(name);
             var inst = editor.querySelector("institution");
             if (inst) content.push(inst.textContent);
             var country = editor.querySelector("country");
             if (country) content.push(country.textContent);
+
             var h1 = {
                 "type": "heading",
                 "id": state.nextId("heading"),
                 "level": 3,
                 "content": "Reviewing Editor"
             };
-            //doc.create(h1);
-            //nodes.push(h1.id);
+
+      doc.create(h1);
+      nodes.push(h1.id);
+
             var t1 = {
                 "type": "text",
                 "id": state.nextId("text"),
                 "content": content.join(", ")
             };
-            //TODO reviewing editor
-            //doc.create(t1);
-            //nodes.push(t1.id);
+
+      doc.create(t1);
+      nodes.push(t1.id);
         }
         return nodes;
     };
+
     //
     // Extracts major datasets
     // -----------------------
-    this.extractDatasets = function (state, article) {
+
+  this.extractDatasets = function(state, article) {
         var nodes = [];
         var doc = state.doc;
+
         var datasets = article.querySelectorAll('sec');
-        for (var i = 0; i < datasets.length; i++) {
+    for (var i = 0;i <datasets.length;i++){
             var data = datasets[i];
             var type = data.getAttribute('sec-type');
             if (type === 'datasets') {
                 var h1 = {
-                    "type": "heading",
-                    "id": state.nextId("heading"),
-                    "level": 3,
-                    "content": "Major Datasets"
+          "type" : "heading",
+          "id" : state.nextId("heading"),
+          "level" : 3,
+          "content" : "Major Datasets"
                 };
                 doc.create(h1);
                 nodes.push(h1.id);
                 var ids = this.datasets(state, util.dom.getChildren(data));
-                for (var j = 0; j < ids.length; j++) {
+        for (var j=0;j < ids.length;j++) {
                     if (ids[j]) {
                         nodes.push(ids[j]);
                     }
@@ -317,56 +376,66 @@ NlmToLensConverter.Prototype = function () {
         }
         return nodes;
     };
-    var _capitalized = function (str, all) {
+
+  var _capitalized = function(str, all) {
         if (all) {
-            return str.split(' ').map(function (s) {
+      return str.split(' ').map(function(s){
                 return _capitalized(s);
             }).join(' ');
         } else {
             return str.charAt(0).toUpperCase() + str.slice(1);
         }
     };
-    this.capitalized = function (str, all) {
+
+  this.capitalized = function(str, all) {
         return _capitalized(str, all);
     };
+
     //
     // Extracts Acknowledgements
     // -------------------------
-    this.extractAcknowledgements = function (state, article) {
+
+  this.extractAcknowledgements = function(state, article) {
         var nodes = [];
         var doc = state.doc;
+
         var acks = article.querySelectorAll("ack");
         if (acks && acks.length > 0) {
-            _.each(acks, function (ack) {
+      _.each(acks, function(ack) {
                 var title = ack.querySelector('title');
                 var header = {
-                    "type": "heading",
-                    "id": state.nextId("heading"),
-                    "level": 3,
-                    "content": title ? this.capitalized(title.textContent.toLowerCase(), "all") : "Acknowledgements"
+          "type" : "heading",
+          "id" : state.nextId("heading"),
+          "level" : 3,
+          "content" : title ? this.capitalized(title.textContent.toLowerCase(), "all") : "Acknowledgements"
                 };
                 doc.create(header);
                 nodes.push(header.id);
+
                 // There may be multiple paragraphs per ack element
                 var pars = this.bodyNodes(state, util.dom.getChildren(ack), {
                     ignore: ["title"]
                 });
-                _.each(pars, function (par) {
+        _.each(pars, function(par) {
                     nodes.push(par.id);
                 });
             }, this);
         }
+
         return nodes;
     };
+
     //
     // Extracts footnotes that should be shown in article info
     // ------------------------------------------
     //
     // Needs to be overwritten in configuration
-    this.extractNotes = function (/*state, article*/) {
+
+  this.extractNotes = function(/*state, article*/) {
         var nodes = [];
         return nodes;
     };
+
     // Can be overridden by custom converter to ignore <meta-name> values.
     // TODO: Maybe switch to a whitelisting approach, so we don't show
     // nonsense. See HighWire implementation
