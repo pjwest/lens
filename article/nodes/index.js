@@ -29,7 +29,6 @@ module.exports = {
   "link": require("./link"),
   "inline_image": require("./inline_image"),
   /* Content types */
-  "abstract": require("./abstract"),
   "document": require("./document"),
   "text": require("./text"),
   "paragraph": require("./paragraph"),
@@ -40,7 +39,6 @@ module.exports = {
   "caption": require("./caption"),
   "image": require("./image"),
   "webresource": require("./web_resource"),
-  "table": require("./table"),
   "supplement": require("./supplement"),
   "video": require("./video"),
   "contributor": require("./contributor"),
@@ -52,8 +50,7 @@ module.exports = {
   "codeblock": require("./codeblock"),
   "affiliation": require("./_affiliation"),
   "footnote": require("./footnote"),
-  "quote": require("./quote"),
-  "speech": require("./speech"),
-  "strike": require("./strike"),
-  "sec_meta": require("./sec_meta")
+  "quote": require("./quote")
+
+
 };
