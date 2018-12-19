@@ -1472,46 +1472,45 @@ NlmToLensConverter.Prototype = function() {
 
   this.indivdata = function(state,indivdata) {
         var doc = state.doc;
-
         var p1 = {
-      "type" : "paragraph",
-      "id" : state.nextId("paragraph"),
-      "children" : []
+            "type": "paragraph",
+            "id": state.nextId("paragraph"),
+            "children": []
         };
         var text1 = {
-      "type" : "text",
-      "id" : state.nextId("text"),
-      "content" : ""
+            "type": "text",
+            "id": state.nextId("text"),
+            "content": ""
         };
         p1.children.push(text1.id);
         var input = util.dom.getChildren(indivdata);
-    for (var i = 0;i<input.length;i++) {
+        for (var i = 0; i < input.length; i++) {
             var info = input[i];
             var type = util.dom.getNodeType(info);
             var par;
             if (type === "name") {
                 var children = util.dom.getChildren(info);
-        for (var j = 0;j<children.length;j++) {
+                for (var j = 0; j < children.length; j++) {
                     var name = children[j];
                     if (j === 0) {
-            par = this.paragraphGroup(state,name);
+                        par = this.paragraphGroup(state, name);
                         p1.children.push(par[0].children[0]);
                     }
                     else {
                         var text2 = {
-              "type" : "text",
-              "id" : state.nextId("text"),
-              "content" : ", "
+                            "type": "text",
+                            "id": state.nextId("text"),
+                            "content": ", "
                         };
                         doc.create(text2);
                         p1.children.push(text2.id);
-            par = this.paragraphGroup(state,name);
+                        par = this.paragraphGroup(state, name);
                         p1.children.push(par[0].children[0]);
                     }
                 }
             }
             else {
-        par = this.paragraphGroup(state,info);
+                par = this.paragraphGroup(state, info);
                 // Smarter null reference check?
                 if (par && par[0] && par[0].children) {
                     p1.children.push(par[0].children[0]);
@@ -1522,29 +1521,25 @@ NlmToLensConverter.Prototype = function() {
         doc.create(text1);
         return p1.id;
     };
-
-  this.section = function(state, section) {
+    this.section = function (state, section) {
         // pushing the section level to track the level for nested sections
         state.sectionLevel++;
-
         var doc = state.doc;
         var children = util.dom.getChildren(section);
         var nodes = [];
-
         // Optional heading label
         var label = this.selectDirectChildren(section, "label")[0];
-
         // create a heading
         var title = this.selectDirectChildren(section, 'title')[0];
+
         if (!title) {
             console.error("FIXME: every section should have a title", this.toHtml(section));
-        }
 
+        }
         // Recursive Descent: get all section body nodes
         nodes = nodes.concat(this.bodyNodes(state, children, {
             ignore: ["title", "label", "sec-meta"]
         }));
-
         if (nodes.length > 0 && title) {
             var id = state.nextId("heading");
             var heading = {
@@ -1575,7 +1570,6 @@ NlmToLensConverter.Prototype = function() {
             if (label) {
                 heading.label = label.textContent;
             }
-
             if (heading.content.length > 0) {
                 doc.create(heading);
                 nodes.unshift(heading);
@@ -1588,7 +1582,6 @@ NlmToLensConverter.Prototype = function() {
         state.sectionLevel--;
         return nodes;
     };
-
     this.ignoredParagraphElements = {
         "comment": true,
         "supplementary-material": true,
@@ -1596,7 +1589,6 @@ NlmToLensConverter.Prototype = function() {
         "fig-group": true,
         "media": true,
     };
-
     this.acceptedParagraphElements = {
         "boxed-text": {handler: "boxedText"},
         "disp-quote": {handler: "quoteText"},
@@ -1605,34 +1597,32 @@ NlmToLensConverter.Prototype = function() {
         "speech": {handler: "speechText"},
         "table-wrap": {handler: "tableWrap"}
     };
-
     this.inlineParagraphElements = {
         "inline-graphic": true,
-    "inline-formula": true
+        "inline-formula": true,
     };
-
     // Segments children elements of a NLM <p> element
     // into blocks grouping according to following rules:
     // - "text", "inline-graphic", "inline-formula", and annotations
     // - ignore comments, supplementary-materials
     // - others are treated as singles
-  this.segmentParagraphElements = function(paragraph) {
+    this.segmentParagraphElements = function (paragraph) {
         var blocks = [];
         var lastType = "";
+        //TODO td as element
+        //paragraph = document.createElement('td');
+        //paragraph.innerHTML='-';
         var iterator = new util.dom.ChildNodeIterator(paragraph);
-
         // first fragment the childNodes into blocks
         while (iterator.hasNext()) {
             var child = iterator.next();
             var type = util.dom.getNodeType(child);
-
             // ignore some elements
             if (this.ignoredParagraphElements[type]) continue;
-
             // paragraph elements
             if (type === "text" || this.isAnnotation(type) || this.inlineParagraphElements[type]) {
                 if (lastType !== "paragraph") {
-          blocks.push({ handler: "paragraph", nodes: [] });
+                    blocks.push({handler: "paragraph", nodes: []});
                     lastType = "paragraph";
                 }
                 _.last(blocks).nodes.push(child);
@@ -1647,20 +1637,18 @@ NlmToLensConverter.Prototype = function() {
         return blocks;
     };
 
-
     // A 'paragraph' is given a '<p>' tag
     // An NLM <p> can contain nested elements that are represented flattened in a Substance.Article
     // Hence, this function returns an array of nodes
-  this.paragraphGroup = function(state, paragraph) {
+    this.paragraphGroup = function (state, paragraph) {
         var nodes = [];
-
         // Note: there are some elements in the NLM paragraph allowed
         // which are flattened here. To simplify further processing we
         // segment the children of the paragraph elements in blocks
         var blocks = this.segmentParagraphElements(paragraph);
-
         for (var i = 0; i < blocks.length; i++) {
             var block = blocks[i];
+
             var node;
             if (block.handler === "paragraph") {
                 node = this.paragraph(state, block.nodes);
@@ -1674,29 +1662,25 @@ NlmToLensConverter.Prototype = function() {
             }
             if (node) nodes.push(node);
         }
-
         return nodes;
     };
-
-  this.paragraph = function(state, children) {
+    this.paragraph = function (state, children) {
         var doc = state.doc;
-
         // Reset whitespace handling at the beginning of a paragraph.
         // I.e., whitespaces at the beginning will be removed rigorously.
         state.skipWS = true;
-
+        //console.log("converter paragraph children --->", children);
         var node = {
             id: state.nextId("paragraph"),
             type: "paragraph",
             children: null
         };
         var nodes = [];
-
         var iterator = new util.dom.ChildNodeIterator(children);
         while (iterator.hasNext()) {
             var child = iterator.next();
             var type = util.dom.getNodeType(child);
-
+            //console.log("converter paragraph child  type --->", type);
             // annotated text node
             if (type === "text" || this.isAnnotation(type)) {
                 var textNode = {
@@ -1713,19 +1697,16 @@ NlmToLensConverter.Prototype = function() {
                 // In that case, the iterator will still have more elements
                 // and the loop is continued
                 // Before descending, we reset the iterator to provide the current element again.
-        var annotatedText = this._annotatedText(state, iterator.back(), { offset: 0, breakOnUnknown: true });
-
+                var annotatedText = this._annotatedText(state, iterator.back(), {offset: 0, breakOnUnknown: true});
                 // Ignore empty paragraphs
                 if (annotatedText.length > 0) {
                     textNode.content = annotatedText;
                     doc.create(textNode);
                     nodes.push(textNode);
                 }
-
                 // popping the stack
                 state.stack.pop();
             }
-
             // inline image node
             else if (type === "inline-graphic") {
                 var url = child.getAttribute("xlink:href");
@@ -1743,11 +1724,17 @@ NlmToLensConverter.Prototype = function() {
                     nodes.push(formula);
                 }
             }
+            else if (type === "table-wrap") {
+                console.log(this.tableWrap(state, child))
+                console.log("converter paragraph child  type handle ------->", child);
             }
+
+        }
+
+        //console.log("converter paragraph child --->", nodes);
 
         // return if there is no content
         if (nodes.length === 0) return null;
-
         // FIXME: ATM we can not unwrap single nodes, as there is code relying
         // on getting a paragraph with children
         // // if there is only a single node, do not create a paragraph around it
@@ -1758,18 +1745,16 @@ NlmToLensConverter.Prototype = function() {
         //   doc.create(node);
         //   return node;
         // }
-
-    node.children = _.map(nodes, function(n) { return n.id; } );
+        node.children = _.map(nodes, function (n) {
+            return n.id;
+        });
         doc.create(node);
         return node;
     };
-
     // List type
     // --------
-
-  this.list = function(state, list) {
+    this.list = function (state, list) {
         var doc = state.doc;
-
         var listNode = {
             "id": state.nextId("list"),
             "source_id": list.getAttribute("id"),
@@ -1779,7 +1764,6 @@ NlmToLensConverter.Prototype = function() {
             "ordered": false,
             "list_type": ""
         };
-
         // TODO: better detect ordererd list types (need examples)
         var ltype = list.getAttribute("list-type");
         var o_types = ["alpha-lower", "alpha-upper", "ordered", "roman-lower", "roman-upper"];
@@ -1788,7 +1772,8 @@ NlmToLensConverter.Prototype = function() {
             if (ltype === o_types[i]) {
                 listNode.ordered = true;
             }
-
+        }
+        listNode.list_type = list.getAttribute("list-type");
         var listItems = list.querySelectorAll("list-item");
         for (var i = 0; i < listItems.length; i++) {
             var listItem = listItems[i];
@@ -1799,18 +1784,14 @@ NlmToLensConverter.Prototype = function() {
                 listNode.item_ids.push(i);
             }
         }
-
         doc.create(listNode);
         return listNode;
     };
-
     // Handle <fig> element
     // --------
     //
-
-  this.figure = function(state, figure) {
+    this.figure = function (state, figure) {
         var doc = state.doc;
-
         // Top level figure node
         var figureNode = {
             "type": "figure",
@@ -1820,73 +1801,62 @@ NlmToLensConverter.Prototype = function() {
             "url": "",
             "caption": null
         };
-
         var labelEl = figure.querySelector("label");
         if (labelEl) {
             figureNode.label = this.annotatedText(state, labelEl, [figureNode.id, 'label']);
         }
-
         // Add a caption if available
         var caption = figure.querySelector("caption");
         if (caption) {
             var captionNode = this.caption(state, caption);
             if (captionNode) figureNode.caption = captionNode.id;
         }
-
         var attrib = figure.querySelector("attrib");
         if (attrib) {
             figureNode.attrib = attrib.textContent;
         }
-
         var position = figure.getAttribute('position');
         if (position) {
             figureNode.position = position || '';
         }
-
         // Lets the configuration patch the figure node properties
         this.enhanceFigure(state, figureNode, figure);
         doc.create(figureNode);
-
         //HACK: add this information so that we can implement the catch-all converter for figures et al.
         figure._converted = true;
-
         return figureNode;
     };
+    /*   Handle <supplementary-material> element
+       --------
 
-  // Handle <supplementary-material> element
-  // --------
-  //
-  // eLife Example:
-  //
-  // <supplementary-material id="SD1-data">
-  //   <object-id pub-id-type="doi">10.7554/eLife.00299.013</object-id>
-  //   <label>Supplementary file 1.</label>
-  //   <caption>
-  //     <title>Compilation of the tables and figures (XLS).</title>
-  //     <p>This is a static version of the
-  //       <ext-link ext-link-type="uri" xlink:href="http://www.vaxgenomics.org/vaxgenomics/" xmlns:xlink="http://www.w3.org/1999/xlink">
-  //         Interactive Results Tool</ext-link>, which is also available to download from Zenodo (see major datasets).</p>
-  //     <p>
-  //       <bold>DOI:</bold>
-  //       <ext-link ext-link-type="doi" xlink:href="10.7554/eLife.00299.013">http://dx.doi.org/10.7554/eLife.00299.013</ext-link>
-  //     </p>
-  //   </caption>
-  //   <media mime-subtype="xlsx" mimetype="application" xlink:href="elife00299s001.xlsx"/>
-  // </supplementary-material>
-  //
-  // LB Example:
-  //
-  // <supplementary-material id="SUP1" xlink:href="2012INTRAVITAL024R-Sup.pdf">
-  //   <label>Additional material</label>
-  //   <media xlink:href="2012INTRAVITAL024R-Sup.pdf"/>
-  // </supplementary-material>
+       eLife Example:
 
-  this.supplement = function(state, supplement) {
+       <supplementary-material id="SD1-data">
+         <object-id pub-id-type="doi">10.7554/eLife.00299.013</object-id>
+         <label>Supplementary file 1.</label>
+         <caption>
+           <title>Compilation of the tables and figures (XLS).</title>
+           <p>This is a static version of the
+             <ext-link ext-link-type="uri" xlink:href="http://www.vaxgenomics.org/vaxgenomics/" xmlns:xlink="http://www.w3.org/1999/xlink">
+               Interactive Results Tool</ext-link>, which is also available to download from Zenodo (see major datasets).</p>
+           <p>
+             <bold>DOI:</bold>
+             <ext-link ext-link-type="doi" xlink:href="10.7554/eLife.00299.013">http://dx.doi.org/10.7554/eLife.00299.013</ext-link>
+           </p>
+         </caption>
+         <media mime-subtype="xlsx" mimetype="application" xlink:href="elife00299s001.xlsx"/>
+       </supplementary-material>
+
+       LB Example:
+
+       <supplementary-material id="SUP1" xlink:href="2012INTRAVITAL024R-Sup.pdf">
+         <label>Additional material</label>
+         <media xlink:href="2012INTRAVITAL024R-Sup.pdf"/>
+       </supplementary-material>*/
+    this.supplement = function (state, supplement) {
         var doc = state.doc;
-
         //get supplement info
         var label = supplement.querySelector("label");
-
         var mediaEl = supplement.querySelector("media");
         var url = mediaEl ? mediaEl.getAttribute("xlink:href") : null;
         var doi = supplement.querySelector("object-id[pub-id-type='doi']");
@@ -1901,28 +1871,21 @@ NlmToLensConverter.Prototype = function() {
             "url": url,
             "caption": null
         };
-
         // Add a caption if available
         var caption = supplement.querySelector("caption");
-
         if (caption) {
             var captionNode = this.caption(state, caption);
             if (captionNode) supplementNode.caption = captionNode.id;
         }
-
         // Let config enhance the node
         this.enhanceSupplement(state, supplementNode, supplement);
         doc.create(supplementNode);
-
         return supplementNode;
     };
-
     // Used by Figure, Table, Video, Supplement types.
     // --------
-
-  this.caption = function(state, caption) {
+    this.caption = function (state, caption) {
         var doc = state.doc;
-
         var captionNode = {
             "id": state.nextId("caption"),
             "source_id": caption.getAttribute("id"),
@@ -1930,7 +1893,6 @@ NlmToLensConverter.Prototype = function() {
             "title": "",
             "children": []
         };
-
         // Titles can be annotated, thus delegate to paragraph
         var title = caption.querySelector("title");
         if (title) {
@@ -1940,41 +1902,35 @@ NlmToLensConverter.Prototype = function() {
                 captionNode.title = node.id;
             }
         }
-
         var children = [];
         var paragraphs = caption.querySelectorAll("p");
-    _.each(paragraphs, function(p) {
+        _.each(paragraphs, function (p) {
             // Only consider direct children
             if (p.parentNode !== caption) return;
             var node = this.paragraph(state, p);
             if (node) children.push(node.id);
         }, this);
-
         captionNode.children = children;
         doc.create(captionNode);
-
         return captionNode;
     };
+    /*  Example video element
 
-  // Example video element
-  //
-  // <media content-type="glencoe play-in-place height-250 width-310" id="movie1" mime-subtype="mov" mimetype="video" xlink:href="elife00005m001.mov">
-  //   <object-id pub-id-type="doi">
-  //     10.7554/eLife.00005.013</object-id>
-  //   <label>Movie 1.</label>
-  //   <caption>
-  //     <title>Movement of GFP tag.</title>
-  //     <p>
-  //       <bold>DOI:</bold>
-  //       <ext-link ext-link-type="doi" xlink:href="10.7554/eLife.00005.013">http://dx.doi.org/10.7554/eLife.00005.013</ext-link>
-  //     </p>
-  //   </caption>
-  // </media>
-
-  this.video = function(state, video) {
+      <media content-type="glencoe play-in-place height-250 width-310" id="movie1" mime-subtype="mov" mimetype="video" xlink:href="elife00005m001.mov">
+        <object-id pub-id-type="doi">
+          10.7554/eLife.00005.013</object-id>
+        <label>Movie 1.</label>
+        <caption>
+          <title>Movement of GFP tag.</title>
+          <p>
+            <bold>DOI:</bold>
+            <ext-link ext-link-type="doi" xlink:href="10.7554/eLife.00005.013">http://dx.doi.org/10.7554/eLife.00005.013</ext-link>
+          </p>
+        </caption>
+      </media>*/
+    this.video = function (state, video) {
         var doc = state.doc;
         var label = video.querySelector("label").textContent;
-
         var id = state.nextId("video");
         var videoNode = {
             "id": id,
@@ -1985,7 +1941,6 @@ NlmToLensConverter.Prototype = function() {
             "caption": null,
             "poster": ""
         };
-
         // Add a caption if available
         var caption = video.querySelector("caption");
         if (caption) {
@@ -2001,11 +1956,9 @@ NlmToLensConverter.Prototype = function() {
         }
         this.enhanceVideo(state, videoNode, video);
         doc.create(videoNode);
-
         return videoNode;
     };
-
-  this.tableWrap = function(state, tableWrap) {
+    this.tableWrap = function (state, tableWrap) {
         var doc = state.doc;
         var label = tableWrap.querySelector("label");
         var table = tableWrap.querySelector("table");
@@ -2053,19 +2006,15 @@ NlmToLensConverter.Prototype = function() {
             "children": content,
             "table_attributes": table.attributes,
             "caption": null,
-      // Not supported yet ... need examples
             footers: [],
-      // doi: "" needed?
         };
         // TODO table node:
         this.extractTableCaption(state, tableNode, tableWrap);
-
         this.enhanceTable(state, tableNode, tableWrap);
         doc.create(tableNode);
         return tableNode;
     };
-
-  this.extractTableCaption = function(state, tableNode, tableWrap) {
+    this.extractTableCaption = function (state, tableNode, tableWrap) {
         // Add a caption if available
         var caption = tableWrap.querySelector("caption");
         if (caption) {
@@ -2075,11 +2024,9 @@ NlmToLensConverter.Prototype = function() {
             console.error('caption node not found for', tableWrap);
         }
     };
-
 // Formula Node Type
 // --------
-
-  this._getFormulaData = function(formulaElement) {
+    this._getFormulaData = function (formulaElement) {
         var result = [];
         for (var child = formulaElement.firstElementChild; child; child = child.nextElementSibling) {
             var type = util.dom.getNodeType(child);
@@ -2119,8 +2066,7 @@ NlmToLensConverter.Prototype = function() {
         }
         return result;
     };
-
-  this.formula = function(state, formulaElement, inline) {
+    this.formula = function (state, formulaElement, inline) {
         var doc = state.doc;
         var formulaNode = {
             id: state.nextId("formula"),
@@ -2205,25 +2151,21 @@ NlmToLensConverter.Prototype = function() {
     };
 // Citations
 // ---------
-
     this.citationTypes = {
         "mixed-citation": true,
         "element-citation": true
     };
-
-  this.refList = function(state, refList) {
+    this.refList = function (state, refList) {
         var refs = refList.querySelectorAll("ref");
         for (var i = 0; i < refs.length; i++) {
             this.ref(state, refs[i]);
         }
     };
-
-  this.ref = function(state, ref) {
+    this.ref = function (state, ref) {
         var children = util.dom.getChildren(ref);
         for (var i = 0; i < children.length; i++) {
             var child = children[i];
             var type = util.dom.getNodeType(child);
-
             if (this.citationTypes[type]) {
                 this.citation(state, ref, child);
             } else if (type === "label") {
@@ -2234,52 +2176,46 @@ NlmToLensConverter.Prototype = function() {
             }
         }
     };
+    /*Citation
+    ------------------
+    NLM input example
 
-  // Citation
-  // ------------------
-  // NLM input example
-  //
-  // <element-citation publication-type="journal" publication-format="print">
-  // <name><surname>Llanos De La Torre Quiralte</surname>
-  // <given-names>M</given-names></name>
-  // <name><surname>Garijo Ayestaran</surname>
-  // <given-names>M</given-names></name>
-  // <name><surname>Poch Olive</surname>
-  // <given-names>ML</given-names></name>
-  // <article-title xml:lang="es">Evolucion de la mortalidad
-  // infantil de La Rioja (1980-1998)</article-title>
-  // <trans-title xml:lang="en">Evolution of the infant
-  // mortality rate in la Rioja in Spain
-  // (1980-1998)</trans-title>
-  // <source>An Esp Pediatr</source>
-  // <year>2001</year>
-  // <month>Nov</month>
-  // <volume>55</volume>
-  // <issue>5</issue>
-  // <fpage>413</fpage>
-  // <lpage>420</lpage>
-  // <comment>Figura 3, Tendencia de mortalidad infantil
-  // [Figure 3, Trends in infant mortality]; p. 418.
-  // Spanish</comment>
-  // </element-citation>
-
+    <element-citation publication-type="journal" publication-format="print">
+    <name><surname>Llanos De La Torre Quiralte</surname>
+    <given-names>M</given-names></name>
+    <name><surname>Garijo Ayestaran</surname>
+    <given-names>M</given-names></name>
+    <name><surname>Poch Olive</surname>
+    <given-names>ML</given-names></name>
+    <article-title xml:lang="es">Evolucion de la mortalidad
+    infantil de La Rioja (1980-1998)</article-title>
+    <trans-title xml:lang="en">Evolution of the infant
+    mortality rate in la Rioja in Spain
+    (1980-1998)</trans-title>
+    <source>An Esp Pediatr</source>
+    <year>2001</year>
+    <month>Nov</month>
+    <volume>55</volume>
+    <issue>5</issue>
+    <fpage>413</fpage>
+    <lpage>420</lpage>
+    <comment>Figura 3, Tendencia de mortalidad infantil
+    [Figure 3, Trends in infant mortality]; p. 418.
+    Spanish</comment>
+    </element-citation>*/
 // TODO: is implemented naively, should be implemented considering the NLM spec
-  this.citation = function(state, ref, citation) {
+    this.citation = function (state, ref, citation) {
         var doc = state.doc;
         var citationNode;
         var i;
-
         var id = state.nextId("article_citation");
-
         // TODO: we should consider to have a more structured citation type
         // and let the view decide how to render it instead of blobbing everything here.
         var personGroup = citation.querySelector("person-group");
-
         // HACK: we try to create a 'articleCitation' when there is structured
         // content (ATM, when personGroup is present)
         // Otherwise we create a mixed-citation taking the plain text content of the element
         if (personGroup) {
-
             citationNode = {
                 "id": id,
                 "source_id": ref.getAttribute("id"),
@@ -2299,16 +2235,13 @@ NlmToLensConverter.Prototype = function() {
             for (i = 0; i < nameElements.length; i++) {
                 citationNode.authors.push(this.getName(nameElements[i]));
             }
-
             // Consider collab elements (treat them as authors)
             var collabElements = personGroup.querySelectorAll("collab");
             for (i = 0; i < collabElements.length; i++) {
                 citationNode.authors.push(collabElements[i].textContent);
             }
-
             var source = citation.querySelector("source");
             if (source) citationNode.source = source.textContent;
-
             var articleTitle = citation.querySelector("article-title");
             if (articleTitle) {
                 citationNode.title = this.annotatedText(state, articleTitle, [id, 'title']);
@@ -2325,29 +2258,21 @@ NlmToLensConverter.Prototype = function() {
                     }
                 }
             }
-
             var volume = citation.querySelector("volume");
             if (volume) citationNode.volume = volume.textContent;
-
             var publisherLoc = citation.querySelector("publisher-loc");
             if (publisherLoc) citationNode.publisher_location = publisherLoc.textContent;
-
             var publisherName = citation.querySelector("publisher-name");
             if (publisherName) citationNode.publisher_name = publisherName.textContent;
-
             var fpage = citation.querySelector("fpage");
             if (fpage) citationNode.fpage = fpage.textContent;
-
             var lpage = citation.querySelector("lpage");
             if (lpage) citationNode.lpage = lpage.textContent;
-
             var year = citation.querySelector("year");
             if (year) citationNode.year = year.textContent;
-
             // Note: the label is child of 'ref'
             var label = ref.querySelector("label");
-      if(label) citationNode.label = label.textContent;
-
+            if (label) citationNode.label = label.textContent;
             var doi = citation.querySelector("pub-id[pub-id-type='doi'], ext-link[ext-link-type='doi']");
             //if (doi) citationNode.doi = "http://dx.doi.org/" + doi.textContent;
             if (doi) citationNode.doi = doi.textContent;
@@ -2379,23 +2304,18 @@ NlmToLensConverter.Prototype = function() {
         }
         doc.create(citationNode);
         doc.show("citations", id);
-
         return citationNode;
     };
-
 // Article.Back
 // --------
-
-  this.back = function(/*state, back*/) {
+    this.back = function (/*state, back*/) {
         // No processing at the moment
         return null;
     };
 
-
 // Annotations
 // -----------
-
-  this.createAnnotation = function(state, el, start, end) {
+    this.createAnnotation = function (state, el, start, end) {
         // do not create an annotaiton if there is no range
         if (start === end) return;
         var type = el.tagName.toLowerCase();
@@ -2406,14 +2326,12 @@ NlmToLensConverter.Prototype = function() {
         };
         this.addAnnotationData(state, anno, el, type);
         this.enhanceAnnotationData(state, anno, el, type);
-
         // assign an id after the type has been extracted to be able to create typed ids
         anno.id = state.nextId(anno.type);
         state.annotations.push(anno);
     };
-
 // Called for annotation types registered in this._annotationTypes
-  this.addAnnotationData = function(state, anno, el, type) {
+    this.addAnnotationData = function (state, anno, el, type) {
         anno.type = this._annotationTypes[type] || "annotation";
         if (type === 'xref') {
             this.addAnnotationDataForXref(state, anno, el);
@@ -2437,20 +2355,18 @@ NlmToLensConverter.Prototype = function() {
             anno.target = formula.id;
         }
     };
-
-  this.addAnnotationDataForXref = function(state, anno, el) {
+    this.addAnnotationDataForXref = function (state, anno, el) {
         var refType = el.getAttribute("ref-type");
         var sourceId = el.getAttribute("rid");
         // Default reference is a cross_reference
         anno.type = this._refTypeMapping[refType] || "cross_reference";
         if (sourceId) anno.target = sourceId;
     };
-
 // Parse annotated text
 // --------------------
 // Make sure you call this method only for nodes where `this.isParagraphish(node) === true`
 //
-  this.annotatedText = function(state, node, path, options) {
+    this.annotatedText = function (state, node, path, options) {
         options = options || {};
         state.stack.push({
             path: path,
@@ -2461,20 +2377,17 @@ NlmToLensConverter.Prototype = function() {
         state.stack.pop();
         return text;
     };
-
 // Internal function for parsing annotated text
 // --------------------------------------------
 // As annotations are nested this is a bit more involved and meant for
 // internal use only.
 //
-  this._annotatedText = function(state, iterator, options) {
+    this._annotatedText = function (state, iterator, options) {
         var plainText = "";
-
         var charPos = (options.offset === undefined) ? 0 : options.offset;
         var nested = !!options.nested;
         var breakOnUnknown = !!options.breakOnUnknown;
-
-    while(iterator.hasNext()) {
+        while (iterator.hasNext()) {
             var el = iterator.next();
             // Plain text nodes...
             if (el.nodeType === Node.TEXT_NODE) {
@@ -2523,25 +2436,21 @@ NlmToLensConverter.Prototype = function() {
         }
         return plainText;
     };
-
 // A place to register handlers to override how the text of an annotation is created.
 // The default implementation is this._getAnnotationText() which extracts the plain text and creates
 // nested annotations if necessary.
 // Examples for other implementations:
 //   - links: the label of a link may be shortened in certain cases
 //   - inline elements: we model inline elements by a pair of annotation and a content node, and we create a custom label.
-
     this._annotationTextHandler = {};
-
-  this._getAnnotationText = function(state, el, type, charPos) {
+    this._getAnnotationText = function (state, el, type, charPos) {
         // recurse into the annotation element to collect nested annotations
         // and the contained plain text
         var childIterator = new util.dom.ChildNodeIterator(el);
-    var annotatedText = this._annotatedText(state, childIterator, { offset: charPos, nested: true });
+        var annotatedText = this._annotatedText(state, childIterator, {offset: charPos, nested: true});
         return annotatedText;
     };
-
-  this._annotationTextHandler['ext-link'] = function(state, el, type, charPos) {
+    this._annotationTextHandler['ext-link'] = function (state, el, type, charPos) {
         var annotatedText = this._getAnnotationText(state, el, charPos);
         // Shorten label for URL links (i.e. if label === url )
         if (type === 'ext-link' && el.getAttribute('xlink:href') === annotatedText.trim()) {
@@ -2549,12 +2458,10 @@ NlmToLensConverter.Prototype = function() {
         }
         return annotatedText;
     };
-
-  this._annotationTextHandler['inline-formula'] = function(state) {
+    this._annotationTextHandler['inline-formula'] = function (state) {
         return state.acceptText("{{inline-formula}}");
     };
-
-  this.shortenLinkLabel = function(state, linkLabel) {
+    this.shortenLinkLabel = function (state, linkLabel) {
         var LINK_MAX_LENGTH = 50;
         var MARGIN = 10;
         // The strategy is preferably to shorten the fragment after the host part, preferring the tail.
@@ -2577,56 +2484,45 @@ NlmToLensConverter.Prototype = function() {
         return linkLabel;
     };
 
-
 // Configureable methods
 // -----------------
 //
-
-  this.getBaseURL = function(state) {
+    this.getBaseURL = function (state) {
         // Use xml:base attribute if present
         var baseURL = state.xmlDoc.querySelector("article").getAttribute("xml:base");
         return baseURL || state.options.baseURL;
     };
-
-  this.enhanceArticle = function(state, article) {
+    this.enhanceArticle = function (state, article) {
         /* jshint unused:false */
         // Noop - override in custom converter
     };
-
-  this.enhanceCover = function(state, node, element) {
+    this.enhanceCover = function (state, node, element) {
         /* jshint unused:false */
         // Noop - override in custom converter
     };
-
 // Implements resolving of relative urls
-  this.enhanceFigure = function(state, node, element) {
+    this.enhanceFigure = function (state, node, element) {
         var graphic = element.querySelector("graphic");
         var url = graphic.getAttribute("xlink:href");
         node.url = this.resolveURL(state, url);
     };
-
-  this.enhancePublicationInfo = function(converter, state, article) {
+    this.enhancePublicationInfo = function (converter, state, article) {
         /* jshint unused:false */
         // Noop - override in custom converter
     };
-
-  this.enhanceSupplement = function(state, node, element) {
+    this.enhanceSupplement = function (state, node, element) {
         /* jshint unused:false */
         // Noop - override in custom converter
     };
-
-  this.enhanceTable = function(state, node, element) {
+    this.enhanceTable = function (state, node, element) {
         /* jshint unused:false */
         // Noop - override in custom converter
     };
-
 // Default video resolver
 // --------
 //
-
-  this.enhanceVideo = function(state, node, element) {
+    this.enhanceVideo = function (state, node, element) {
         // xlink:href example: elife00778v001.mov
-
         var url = element.getAttribute("xlink:href");
         var name;
         // Just return absolute urls
@@ -2654,13 +2550,11 @@ NlmToLensConverter.Prototype = function() {
              */
         }
     };
-
 // Default figure url resolver
 // --------
 //
 // For relative urls it uses the same basebath as the source XML
-
-  this.resolveURL = function(state, url) {
+    this.resolveURL = function (state, url) {
         // Just return absolute urls
         if (url.match(/http:/)) return url;
         return [
@@ -2668,7 +2562,6 @@ NlmToLensConverter.Prototype = function() {
             url
         ].join('');
     };
-
     this.viewMapping = {
         // "image": "figures",
         "box": "content",
@@ -2677,63 +2570,48 @@ NlmToLensConverter.Prototype = function() {
         //"table": "figures",
         "video": "figures"
     };
-
-  this.enhanceAnnotationData = function(state, anno, element, type) {
+    this.enhanceAnnotationData = function (state, anno, element, type) {
         /* jshint unused:false */
     };
-
-  this.showNode = function(state, node) {
+    this.showNode = function (state, node) {
         var view = this.viewMapping[node.type] || "content";
         state.doc.show(view, node.id);
     };
-
-};
-
-NlmToLensConverter.State = function(converter, xmlDoc, doc) {
+}
+;
+NlmToLensConverter.State = function (converter, xmlDoc, doc) {
     var self = this;
-
     // the input xml document
     this.xmlDoc = xmlDoc;
-
     // the output substance document
     this.doc = doc;
-
     // keep track of the options
     this.options = converter.options;
-
     // this.config = new DefaultConfiguration();
-
     // store annotations to be created here
     // they will be added to the document when everything else is in place
     this.annotations = [];
-
     // when recursing into sub-nodes it is necessary to keep the stack
     // of processed nodes to be able to associate other things (e.g., annotations) correctly.
     this.stack = [];
-
     this.sectionLevel = 1;
-
     // Tracks all available affiliations
     this.affiliations = [];
-
     // an id generator for different types
     var ids = {};
-  this.nextId = function(type) {
+    this.nextId = function (type) {
         ids[type] = ids[type] || 0;
         ids[type]++;
-    return type +"_"+ids[type];
+        return type + "_" + ids[type];
     };
-
     // store ids here which have been processed already
     this.used = {};
-
     // Note: it happens that some XML files are edited without considering the meaning of whitespaces
     // to increase readability.
     // This *hack* eliminates multiple whitespaces at the begin and end of textish elements.
     // Tabs and New Lines are eliminated completely. So with this, the preferred way to prettify your XML
     // is to use Tabuators and New Lines. At the same time, it is not possible anymore to have soft breaks within
     // a text.
-
     var WS_LEFT = /^\s+/g;
     var WS_LEFT_ALL = /^\s*/g;
     var WS_RIGHT = /\s+$/g;
@@ -2742,56 +2620,46 @@ NlmToLensConverter.State = function(converter, xmlDoc, doc) {
     // var ALL_WS_NOTSPACE_RIGHT = /[\t\n]+$/g;
     var SPACE = " ";
     var TABS_OR_NL = /[\t\n\r]+/g;
-
     this.lastChar = "";
     this.skipWS = false;
-
-  this.acceptText = function(text) {
+    this.acceptText = function (text) {
         if (!this.options.TRIM_WHITESPACES) {
             return text;
         }
-
         // EXPERIMENTAL: drop all 'formatting' white-spaces (e.g., tabs and new lines)
         // (instead of doing so only at the left and right end)
         //text = text.replace(ALL_WS_NOTSPACE_LEFT, "");
         //text = text.replace(ALL_WS_NOTSPACE_RIGHT, "");
         text = text.replace(TABS_OR_NL, "");
-
         if (this.lastChar === SPACE || this.skipWS) {
-      text = text.replace(WS_LEFT_ALL, "");
+            // ignores one space for empty table elements
+            if (text !== SPACE) {
+                text = text.replace(WS_LEFT_ALL, '');
+            }
         } else {
             text = text.replace(WS_LEFT, SPACE);
         }
         // this state is only kept for one call
         this.skipWS = false;
-
         text = text.replace(WS_RIGHT, SPACE);
-
-    // EXPERIMENTAL: also remove white-space within
         if (this.options.REMOVE_INNER_WS) {
             text = text.replace(WS_ALL, SPACE);
         }
-
-    this.lastChar = text[text.length-1] || this.lastChar;
+        this.lastChar = text[text.length - 1] || this.lastChar;
         return text;
     };
-
-  this.top = function() {
+    this.top = function () {
         var top = _.last(self.stack);
         top = top || {};
         top.ignore = top.ignore || [];
         return top;
     };
 };
-
 NlmToLensConverter.prototype = new NlmToLensConverter.Prototype();
 NlmToLensConverter.prototype.constructor = NlmToLensConverter;
-
 // NlmToLensConverter.DefaultConfiguration = DefaultConfiguration;
-
 NlmToLensConverter.DefaultOptions = {
     TRIM_WHITESPACES: true,
     REMOVE_INNER_WS: true
 };
-
 module.exports = NlmToLensConverter;
