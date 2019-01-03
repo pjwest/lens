@@ -90,7 +90,7 @@ Citation.example = {
   "citation_urls": [
     {
       "name": "PubMed",
-      "url": "https://www.ncbi.nlm.nih.gov/pubmed/19606141"
+      "url": "http://www.ncbi.nlm.nih.gov/pubmed/19606141"
     }
   ]
 };
@@ -107,7 +107,7 @@ Citation.Prototype = function() {
   };
 
   this.getHeader = function() {
-    return _.compact([this.properties.label, this.properties.citation_type || locales.Reference]).join(' - ');
+    return _.compact([this.properties.label, this.properties.citation_type || "Reference"]).join(' - ');
   };
 };
 

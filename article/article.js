@@ -358,4 +358,5 @@ Object.defineProperties(Article.prototype, {
     }
   },
 });
+
 module.exports = Article;
