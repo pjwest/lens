@@ -1658,20 +1658,19 @@ NlmToLensConverter.Prototype = function() {
     var blocks = this.segmentParagraphElements(paragraph);
 
     for (var i = 0; i < blocks.length; i++) {
-        var block = blocks[i];
+      var block = blocks[i];
 
-        var node;
-        if (block.handler === "paragraph") {
-            node = this.paragraph(state, block.nodes);
-            if (node) {
-                node.source_id = paragraph.getAttribute("id");
-                node.attributes = paragraph.attributes;
-            }
-            ;
-        } else {
-            node = this[block.handler](state, block.node);
+      var node;
+      if (block.handler === "paragraph") {
+        node = this.paragraph(state, block.nodes);
+        if (node) {node.source_id = paragraph.getAttribute("id");
+            node.attributes = paragraph.attributes;
         }
-        if (node) nodes.push(node);
+
+      } else {
+        node = this[block.handler](state, block.node);
+      }
+      if (node) nodes.push(node);
     }
 
     return nodes;
@@ -1685,70 +1684,73 @@ NlmToLensConverter.Prototype = function() {
     state.skipWS = true;
 
     var node = {
-        id: state.nextId("paragraph"),
-        type: "paragraph",
-        children: null
+      id: state.nextId("paragraph"),
+      type: "paragraph",
+      children: null
     };
     var nodes = [];
+
     var iterator = new util.dom.ChildNodeIterator(children);
     while (iterator.hasNext()) {
-        var child = iterator.next();
-        var type = util.dom.getNodeType(child);
-        //console.log("converter paragraph child  type --->", type);
-        // annotated text node
-        if (type === "text" || this.isAnnotation(type)) {
-            var textNode = {
-                id: state.nextId("text"),
-                type: "text",
-                content: null
-            };
-            // pushing information to the stack so that annotations can be created appropriately
-            state.stack.push({
-                path: [textNode.id, "content"]
-            });
-            // Note: this will consume as many textish elements (text and annotations)
-            // but will return when hitting the first un-textish element.
-            // In that case, the iterator will still have more elements
-            // and the loop is continued
-            // Before descending, we reset the iterator to provide the current element again.
-            var annotatedText = this._annotatedText(state, iterator.back(), {offset: 0, breakOnUnknown: true});
-            // Ignore empty paragraphs
-            if (annotatedText.length > 0) {
-                textNode.content = annotatedText;
-                doc.create(textNode);
-                nodes.push(textNode);
-            }
-            // popping the stack
-            state.stack.pop();
-        }
-        // inline image node
-        else if (type === "inline-graphic") {
-            var url = child.getAttribute("xlink:href");
-            var img = {
-                id: state.nextId("image"),
-                type: "image",
-                url: this.resolveURL(state, url)
-            };
-            doc.create(img);
-            nodes.push(img);
-        }
-        else if (type === "inline-formula") {
-            var formula = this.formula(state, child, "inline");
-            if (formula) {
-                nodes.push(formula);
-            }
-        }
-        else if (type === "table-wrap") {
-            this.tableWrap(state, child);
+      var child = iterator.next();
+      var type = util.dom.getNodeType(child);
 
+      // annotated text node
+      if (type === "text" || this.isAnnotation(type)) {
+        var textNode = {
+          id: state.nextId("text"),
+          type: "text",
+          content: null
+        };
+        // pushing information to the stack so that annotations can be created appropriately
+        state.stack.push({
+          path: [textNode.id, "content"]
+        });
+        // Note: this will consume as many textish elements (text and annotations)
+        // but will return when hitting the first un-textish element.
+        // In that case, the iterator will still have more elements
+        // and the loop is continued
+        // Before descending, we reset the iterator to provide the current element again.
+        var annotatedText = this._annotatedText(state, iterator.back(), { offset: 0, breakOnUnknown: true });
+
+        // Ignore empty paragraphs
+        if (annotatedText.length > 0) {
+          textNode.content = annotatedText;
+          doc.create(textNode);
+          nodes.push(textNode);
         }
+
+        // popping the stack
+        state.stack.pop();
+      }
+
+      // inline image node
+      else if (type === "inline-graphic") {
+        var url = child.getAttribute("xlink:href");
+        var img = {
+          id: state.nextId("image"),
+          type: "image",
+          url: this.resolveURL(state, url)
+        };
+        doc.create(img);
+        nodes.push(img);
+      }
+      else if (type === "inline-formula") {
+          var formula = this.formula(state, child, "inline");
+          if (formula) {
+              nodes.push(formula);
+          }
+          else if (type === "table-wrap") {
+              this.tableWrap(state, child);
+
+          }
+      }
 
     }
 
-    //console.log("converter paragraph child --->", nodes);
-
     // return if there is no content
     if (nodes.length === 0) return null;
+
     // FIXME: ATM we can not unwrap single nodes, as there is code relying
     // on getting a paragraph with children
     // // if there is only a single node, do not create a paragraph around it
@@ -1759,9 +1761,8 @@ NlmToLensConverter.Prototype = function() {
     //   doc.create(node);
     //   return node;
     // }
-    node.children = _.map(nodes, function (n) {
-        return n.id;
-    });
+
+    node.children = _.map(nodes, function(n) { return n.id; } );
     doc.create(node);
     return node;
   };
