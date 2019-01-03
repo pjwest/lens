@@ -2618,35 +2618,35 @@ NlmToLensConverter.Prototype = function() {
     /* jshint unused:false */
     // Noop - override in custom converter
   };
-  this.enhanceSupplement = function (state, node, element) {
+
+  this.enhanceSupplement = function(state, node, element) {
     /* jshint unused:false */
     // Noop - override in custom converter
   };
-  this.enhanceTable = function (state, node, element) {
+
+  this.enhanceTable = function(state, node, element) {
     /* jshint unused:false */
     // Noop - override in custom converter
   };
-// Default video resolver
-// --------
-//
-  this.enhanceVideo = function (state, node, element) {
+
+  // Default video resolver
+  // --------
+  //
+
+  this.enhanceVideo = function(state, node, element) {
     // xlink:href example: elife00778v001.mov
+
     var url = element.getAttribute("xlink:href");
     var name;
     // Just return absolute urls
-    if (url.match(/http[s]*:/)) {
-        var lastdotIdx = url.lastIndexOf(".");
-        if ((url.length - lastdotIdx === 5) || (url.length - lastdotIdx === 4)) {
-            name = url.substring(0, lastdotIdx);
-            node.url = name + ".mp4";
-            node.url_ogv = name + ".ogv";
-            node.url_webm = name + ".webm";
-            node.poster = name + ".png";
-        }
-        else {
-            node.url = url;
-        }
-        return;
+    if (url.match(/http:/)) {
+      var lastdotIdx = url.lastIndexOf(".");
+      name = url.substring(0, lastdotIdx);
+      node.url = name+".mp4";
+      node.url_ogv = name+".ogv";
+      node.url_webm = name+".webm";
+      node.poster = name+".png";
+      return;
     } else {
         /*
          var baseURL = this.getBaseURL(state);
@@ -2658,18 +2658,21 @@ NlmToLensConverter.Prototype = function() {
          */
     }
   };
-// Default figure url resolver
-// --------
-//
-// For relative urls it uses the same basebath as the source XML
-  this.resolveURL = function (state, url) {
+
+  // Default figure url resolver
+  // --------
+  //
+  // For relative urls it uses the same basebath as the source XML
+
+  this.resolveURL = function(state, url) {
     // Just return absolute urls
     if (url.match(/http:/)) return url;
     return [
-        state.options.baseURL,
-        url
+      state.options.baseURL,
+      url
     ].join('');
   };
+
   this.viewMapping = {
     // "image": "figures",
     "box": "content",
@@ -2678,96 +2681,121 @@ NlmToLensConverter.Prototype = function() {
     //"table": "figures",
     "video": "figures"
   };
-  this.enhanceAnnotationData = function (state, anno, element, type) {
+
+  this.enhanceAnnotationData = function(state, anno, element, type) {
     /* jshint unused:false */
   };
-  this.showNode = function (state, node) {
+
+  this.showNode = function(state, node) {
     var view = this.viewMapping[node.type] || "content";
     state.doc.show(view, node.id);
   };
-}
-;
-NlmToLensConverter.State = function (converter, xmlDoc, doc) {
+
+};
+
+NlmToLensConverter.State = function(converter, xmlDoc, doc) {
   var self = this;
+
   // the input xml document
   this.xmlDoc = xmlDoc;
+
   // the output substance document
   this.doc = doc;
+
   // keep track of the options
   this.options = converter.options;
+
   // this.config = new DefaultConfiguration();
+
   // store annotations to be created here
   // they will be added to the document when everything else is in place
   this.annotations = [];
+
   // when recursing into sub-nodes it is necessary to keep the stack
   // of processed nodes to be able to associate other things (e.g., annotations) correctly.
   this.stack = [];
+
   this.sectionLevel = 1;
+
   // Tracks all available affiliations
   this.affiliations = [];
+
   // an id generator for different types
   var ids = {};
-  this.nextId = function (type) {
+  this.nextId = function(type) {
     ids[type] = ids[type] || 0;
     ids[type]++;
-    return type + "_" + ids[type];
+    return type +"_"+ids[type];
   };
+
   // store ids here which have been processed already
   this.used = {};
+
   // Note: it happens that some XML files are edited without considering the meaning of whitespaces
   // to increase readability.
   // This *hack* eliminates multiple whitespaces at the begin and end of textish elements.
   // Tabs and New Lines are eliminated completely. So with this, the preferred way to prettify your XML
   // is to use Tabuators and New Lines. At the same time, it is not possible anymore to have soft breaks within
   // a text.
+
   var WS_LEFT = /^\s+/g;
   var WS_LEFT_ALL = /^\s*/g;
   var WS_RIGHT = /\s+$/g;
-  var WS_ALL = /\s+/g;
+   var WS_ALL = /\s+/g;
   // var ALL_WS_NOTSPACE_LEFT = /^[\t\n]+/g;
   // var ALL_WS_NOTSPACE_RIGHT = /[\t\n]+$/g;
   var SPACE = " ";
   var TABS_OR_NL = /[\t\n\r]+/g;
+
   this.lastChar = "";
   this.skipWS = false;
-  this.acceptText = function (text) {
+
+  this.acceptText = function(text) {
     if (!this.options.TRIM_WHITESPACES) {
-        return text;
+      return text;
     }
+
     // EXPERIMENTAL: drop all 'formatting' white-spaces (e.g., tabs and new lines)
     // (instead of doing so only at the left and right end)
     //text = text.replace(ALL_WS_NOTSPACE_LEFT, "");
     //text = text.replace(ALL_WS_NOTSPACE_RIGHT, "");
     text = text.replace(TABS_OR_NL, "");
+
     if (this.lastChar === SPACE || this.skipWS) {
-        // ignores one space for empty table elements
-        if (text !== SPACE) {
-            text = text.replace(WS_LEFT_ALL, '');
-        }
+      text = text.replace(WS_LEFT_ALL, "");
     } else {
-        text = text.replace(WS_LEFT, SPACE);
+      text = text.replace(WS_LEFT, SPACE);
     }
     // this state is only kept for one call
     this.skipWS = false;
+
     text = text.replace(WS_RIGHT, SPACE);
+
+    // EXPERIMENTAL: also remove white-space within
     if (this.options.REMOVE_INNER_WS) {
-        text = text.replace(WS_ALL, SPACE);
+      text = text.replace(WS_ALL, SPACE);
     }
-    this.lastChar = text[text.length - 1] || this.lastChar;
+
+    this.lastChar = text[text.length-1] || this.lastChar;
     return text;
   };
-  this.top = function () {
+
+  this.top = function() {
     var top = _.last(self.stack);
     top = top || {};
     top.ignore = top.ignore || [];
     return top;
   };
 };
+
 NlmToLensConverter.prototype = new NlmToLensConverter.Prototype();
 NlmToLensConverter.prototype.constructor = NlmToLensConverter;
+
 // NlmToLensConverter.DefaultConfiguration = DefaultConfiguration;
+
 NlmToLensConverter.DefaultOptions = {
   TRIM_WHITESPACES: true,
   REMOVE_INNER_WS: true
 };
+
 module.exports = NlmToLensConverter;
