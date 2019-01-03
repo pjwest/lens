@@ -728,9 +728,9 @@ NlmToLensConverter.Prototype = function() {
     // This is a data-modelling problem on the end of our input XML
     // so we need to be smart about it in the converter
     if (contribNode.competing_interests.length > 1) {
-        contribNode.competing_interests = _.filter(contribNode.competing_interests, function (confl) {
-            return confl.indexOf("no competing") < 0;
-        });
+      contribNode.competing_interests = _.filter(contribNode.competing_interests, function(confl) {
+        return confl.indexOf("no competing") < 0;
+      });
     }
 
     if (contrib.getAttribute("contrib-type") === "author") {
@@ -752,15 +752,16 @@ NlmToLensConverter.Prototype = function() {
 
   this._getEqualContribs = function (state, contrib, contribId) {
     var result = [];
-    var refs = state.xmlDoc.querySelectorAll("xref[rid=" + contribId + "]");
+    var refs = state.xmlDoc.querySelectorAll("xref[rid="+contribId+"]");
     // Find xrefs within contrib elements
-    _.each(refs, function (ref) {
-        var c = ref.parentNode;
-        if (c !== contrib) result.push(this.getName(c.querySelector("name")));
+    _.each(refs, function(ref) {
+      var c = ref.parentNode;
+      if (c !== contrib) result.push(this.getName(c.querySelector("name")));
     }, this);
     return result;
   };
-  this.extractContributorProperties = function (state, contrib, contribNode) {
+
+  this.extractContributorProperties = function(state, contrib, contribNode) {
     var doc = state.doc;
 
     // Extract equal contributors
@@ -769,84 +770,84 @@ NlmToLensConverter.Prototype = function() {
 
     // extract affiliations stored as xrefs
     var xrefs = contrib.querySelectorAll("xref");
-    _.each(xrefs, function (xref) {
-        if (xref.getAttribute("ref-type") === "aff") {
-            var affId = xref.getAttribute("rid");
-            var affNode = doc.getNodeBySourceId(affId);
-            if (affNode) {
-                contribNode.affiliations.push(affNode.id);
-                state.used[affId] = true;
-            }
-        } else if (xref.getAttribute("ref-type") === "other") {
-            // FIXME: it seems *very* custom to interprete every 'other' that way
-            // TODO: try to find and document when this is applied
-            console.log("FIXME: please add documentation about using 'other' as indicator for extracting an awardGroup.");
-
-            var awardGroup = state.xmlDoc.getElementById(xref.getAttribute("rid"));
-            if (!awardGroup) return;
-            var fundingSource = awardGroup.querySelector("funding-source");
-            if (!fundingSource) return;
-            var awardId = awardGroup.querySelector("award-id");
-            awardId = awardId ? ", " + awardId.textContent : "";
-            // Funding source nodes are looking like this
-            //
-            // <funding-source>
-            //   National Institutes of Health
-            //   <named-content content-type="funder-id">http://dx.doi.org/10.13039/100000002</named-content>
-            // </funding-source>
-            //
-            // and we only want to display the first text node, excluding the funder id
-            var fundingSourceName = fundingSource.childNodes[0].textContent;
-            contribNode.fundings.push([fundingSourceName, awardId].join(''));
-        } else if (xref.getAttribute("ref-type") === "corresp") {
-            var correspId = xref.getAttribute("rid");
-            var corresp = state.xmlDoc.getElementById(correspId);
-            if (!corresp) return;
-            // TODO: a corresp element allows *much* more than just an email
-            // Thus, we are leaving this like untouched, so that it may be grabbed by extractAuthorNotes()
-            // state.used[correspId] = true;
-            var email = corresp.querySelector("email");
-            if (!email) return;
-            contribNode.emails.push(email.textContent);
-        } else if (xref.getAttribute("ref-type") === "fn") {
-            var fnId = xref.getAttribute("rid");
-            var fnElem = state.xmlDoc.getElementById(fnId);
-            var used = true;
-            if (fnElem) {
-                var fnType = fnElem.getAttribute("fn-type");
-                switch (fnType) {
-                    case "con":
-                        contribNode.contribution = fnElem.textContent;
-                        break;
-                    case "conflict":
-                        compInterests.push(fnElem.textContent.trim());
-                        break;
-                    case "present-address":
-                        contribNode.present_address = fnElem.querySelector("p").textContent;
-                        break;
-                    case "equal":
-                        console.log("FIXME: isn't fnElem.getAttribute(id) === fnId?");
-                        equalContribs = this._getEqualContribs(state, contrib, fnElem.getAttribute("id"));
-                        break;
-                    case "other":
-                        // HACK: sometimes equal contribs are encoded as 'other' plus special id
-                        console.log("FIXME: isn't fnElem.getAttribute(id) === fnId?");
-                        if (fnElem.getAttribute("id").indexOf("equal-contrib") >= 0) {
-                            equalContribs = this._getEqualContribs(state, contrib, fnElem.getAttribute("id"));
-                        } else {
-                            used = false;
-                        }
-                        break;
-                    default:
-                        used = false;
-                }
-                if (used) state.used[fnId] = true;
-            }
-        } else {
-            // TODO: this is a potential place for implementing a catch-bin
-            // For that, we could push the content of the referenced element into the contrib's catch-bin
-            console.log("Skipping contrib's xref", xref.textContent);
+    _.each(xrefs, function(xref) {
+      if (xref.getAttribute("ref-type") === "aff") {
+        var affId = xref.getAttribute("rid");
+        var affNode = doc.getNodeBySourceId(affId);
+        if (affNode) {
+          contribNode.affiliations.push(affNode.id);
+          state.used[affId] = true;
         }
+      } else if (xref.getAttribute("ref-type") === "other") {
+        // FIXME: it seems *very* custom to interprete every 'other' that way
+        // TODO: try to find and document when this is applied
+        console.log("FIXME: please add documentation about using 'other' as indicator for extracting an awardGroup.");
+
+        var awardGroup = state.xmlDoc.getElementById(xref.getAttribute("rid"));
+        if (!awardGroup) return;
+        var fundingSource = awardGroup.querySelector("funding-source");
+        if (!fundingSource) return;
+        var awardId = awardGroup.querySelector("award-id");
+        awardId = awardId ? ", "+awardId.textContent : "";
+        // Funding source nodes are looking like this
+        //
+        // <funding-source>
+        //   National Institutes of Health
+        //   <named-content content-type="funder-id">http://dx.doi.org/10.13039/100000002</named-content>
+        // </funding-source>
+        //
+        // and we only want to display the first text node, excluding the funder id
+        var fundingSourceName = fundingSource.childNodes[0].textContent;
+        contribNode.fundings.push([fundingSourceName, awardId].join(''));
+      } else if (xref.getAttribute("ref-type") === "corresp") {
+        var correspId = xref.getAttribute("rid");
+        var corresp = state.xmlDoc.getElementById(correspId);
+        if (!corresp) return;
+        // TODO: a corresp element allows *much* more than just an email
+        // Thus, we are leaving this like untouched, so that it may be grabbed by extractAuthorNotes()
+        // state.used[correspId] = true;
+        var email = corresp.querySelector("email");
+        if (!email) return;
+        contribNode.emails.push(email.textContent);
+      } else if (xref.getAttribute("ref-type") === "fn") {
+        var fnId = xref.getAttribute("rid");
+        var fnElem = state.xmlDoc.getElementById(fnId);
+        var used = true;
+        if (fnElem) {
+          var fnType = fnElem.getAttribute("fn-type");
+          switch (fnType) {
+            case "con":
+              contribNode.contribution = fnElem.textContent;
+              break;
+            case "conflict":
+              compInterests.push(fnElem.textContent.trim());
+              break;
+            case "present-address":
+              contribNode.present_address = fnElem.querySelector("p").textContent;
+              break;
+            case "equal":
+              console.log("FIXME: isn't fnElem.getAttribute(id) === fnId?");
+              equalContribs = this._getEqualContribs(state, contrib, fnElem.getAttribute("id"));
+              break;
+            case "other":
+              // HACK: sometimes equal contribs are encoded as 'other' plus special id
+              console.log("FIXME: isn't fnElem.getAttribute(id) === fnId?");
+              if (fnElem.getAttribute("id").indexOf("equal-contrib")>=0) {
+                equalContribs = this._getEqualContribs(state, contrib, fnElem.getAttribute("id"));
+              } else {
+                used = false;
+              }
+              break;
+            default:
+              used = false;
+          }
+          if (used) state.used[fnId] = true;
+        }
+      } else {
+        // TODO: this is a potential place for implementing a catch-bin
+        // For that, we could push the content of the referenced element into the contrib's catch-bin
+        console.log("Skipping contrib's xref", xref.textContent);
+      }
     }, this);
 
     // Extract member list for person group
@@ -854,20 +855,20 @@ NlmToLensConverter.Prototype = function() {
     // ----------------
 
     if (compInterests.length > 1) {
-        compInterests = _.filter(compInterests, function (confl) {
-            return confl.indexOf("no competing") < 0;
-        });
+      compInterests = _.filter(compInterests, function(confl) {
+        return confl.indexOf("no competing") < 0;
+      });
     }
 
     contribNode.competing_interests = compInterests;
     var memberList = contrib.querySelector("xref[ref-type=other]");
 
     if (memberList) {
-        var memberListId = memberList.getAttribute("rid");
-        var members = state.xmlDoc.querySelectorAll("#" + memberListId + " contrib");
-        contribNode.members = _.map(members, function (m) {
-            return this.getName(m.querySelector("name"));
-        }, this);
+      var memberListId = memberList.getAttribute("rid");
+      var members = state.xmlDoc.querySelectorAll("#"+memberListId+" contrib");
+      contribNode.members = _.map(members, function(m) {
+        return this.getName(m.querySelector("name"));
+      }, this);
     }
 
     contribNode.equal_contrib = equalContribs;
@@ -884,42 +885,42 @@ NlmToLensConverter.Prototype = function() {
   // Note: a specialized converter can derive this method and
   // add additional pre- or post-processing.
 
-  this.document = function (state, xmlDoc) {
+  this.document = function(state, xmlDoc) {
     var doc = state.doc;
     var article = xmlDoc.querySelector("article");
     if (!article) {
-        throw new ImporterError("Expected to find an 'article' element.");
+      throw new ImporterError("Expected to find an 'article' element.");
     }
     // recursive-descent for the main body of the article
     this.article(state, article);
     this.postProcess(state);
     // Rebuild views to ensure consistency
-    _.each(doc.containers, function (container) {
-        container.rebuild();
+    _.each(doc.containers, function(container) {
+      container.rebuild();
     });
     return doc;
   };
 
-  this.postProcess = function (state) {
+  this.postProcess = function(state) {
     this.postProcessAnnotations(state);
   };
 
-  this.postProcessAnnotations = function (state) {
+  this.postProcessAnnotations = function(state) {
     // Creating the annotations afterwards, to make sure
     // that all referenced nodes are available
     for (var i = 0; i < state.annotations.length; i++) {
-        var anno = state.annotations[i];
-        if (anno.target) {
-            var targetNode = state.doc.getNodeBySourceId(anno.target);
-            if (targetNode) {
-                anno.target = targetNode.id;
-            } else {
-                // NOTE: I've made this silent because it frequently occurs that no targetnode is
-                // available (e.g. for inline formulas)
-                // console.log("Could not lookup targetNode for annotation", anno);
-            }
+      var anno = state.annotations[i];
+      if (anno.target) {
+        var targetNode = state.doc.getNodeBySourceId(anno.target);
+        if (targetNode) {
+          anno.target = targetNode.id;
+        } else {
+          // NOTE: I've made this silent because it frequently occurs that no targetnode is
+          // available (e.g. for inline formulas)
+          // console.log("Could not lookup targetNode for annotation", anno);
         }
-        state.doc.create(state.annotations[i]);
+      }
+      state.doc.create(state.annotations[i]);
     }
   };
 
@@ -935,17 +936,17 @@ NlmToLensConverter.Prototype = function() {
   //  - and implement the handler here if it can be done in general way
   //    or in your specialized importer.
 
-  this.article = function (state, article) {
+  this.article = function(state, article) {
     var doc = state.doc;
 
     // Assign id
     var articleId = article.querySelector("article-id");
     // Note: Substance.Article does only support one id
     if (articleId) {
-        doc.id = articleId.textContent;
+      doc.id = articleId.textContent;
     } else {
-        // if no id was set we create a random one
-        doc.id = util.uuid();
+      // if no id was set we create a random one
+      doc.id = util.uuid();
     }
 
     // Extract glossary
@@ -969,47 +970,43 @@ NlmToLensConverter.Prototype = function() {
 
     var body = article.querySelector("body");
     if (body) {
-        this.body(state, body);
+      this.body(state, body);
     }
 
     this.extractFigures(state, article);
 
-    this.extractFootnotes(state, article);
-
     this.enhanceArticle(state, article);
-
-
-
   };
-  this.extractDefinitions = function (state /*, article*/) {
+
+  this.extractDefinitions = function(state /*, article*/) {
     var defItems = state.xmlDoc.querySelectorAll("def-item");
 
-    _.each(defItems, function (defItem) {
-        var term = defItem.querySelector("term");
-        var def = defItem.querySelector("def");
+    _.each(defItems, function(defItem) {
+      var term = defItem.querySelector("term");
+      var def = defItem.querySelector("def");
 
-        // using hwp:id as a fallback MCP articles don't have def.id set
-        var id = def.id || def.getAttribute("hwp:id") || state.nextId('definition');
+      // using hwp:id as a fallback MCP articles don't have def.id set
+      var id = def.id || def.getAttribute("hwp:id") || state.nextId('definition');
 
-        var definitionNode = {
-            id: id,
-            type: "definition",
-            title: term.textContent,
-            description: def.textContent
-        };
+      var definitionNode = {
+        id: id,
+        type: "definition",
+        title: term.textContent,
+        description: def.textContent
+      };
 
-        state.doc.create(definitionNode);
-        state.doc.show("definitions", definitionNode.id);
+      state.doc.create(definitionNode);
+      state.doc.show("definitions", definitionNode.id);
     });
   };
 
   // #### Front.ArticleMeta
   //
 
-  this.extractArticleMeta = function (state, article) {
+  this.extractArticleMeta = function(state, article) {
     var articleMeta = article.querySelector("article-meta");
     if (!articleMeta) {
-        throw new ImporterError("Expected element: 'article-meta'");
+      throw new ImporterError("Expected element: 'article-meta'");
     }
 
     // <article-id> Article Identifier, zero or more
@@ -1035,57 +1032,57 @@ NlmToLensConverter.Prototype = function() {
     // <custom-meta-group> Custom Metadata Group, zero or one
   };
 
-  this.extractAffilitations = function (state, article) {
-    var affiliations = article.querySelectorAll("aff");
+  this.extractAffilitations = function(state, article) {
+    var affiliations =  article.querySelectorAll("aff");
     for (var i = 0; i < affiliations.length; i++) {
-        this.affiliation(state, affiliations[i]);
+      this.affiliation(state, affiliations[i]);
     }
   };
 
-  this.extractContributors = function (state, article) {
+  this.extractContributors = function(state, article) {
     // TODO: the spec says, that there may be any combination of
     // 'contrib-group', 'aff', 'aff-alternatives', and 'x'
     // However, in the articles seen so far, these were sub-elements of 'contrib-group', which itself was single
     var contribGroup = article.querySelector("contrib-group");
     if (contribGroup) {
-        this.contribGroup(state, contribGroup);
+      this.contribGroup(state, contribGroup);
     }
 
   };
 
   // Catch-all implementation for figures et al.
-  this.extractFigures = function (state, xmlDoc) {
+  this.extractFigures = function(state, xmlDoc) {
     // Globally query all figure-ish content, <fig>, <supplementary-material>, <table-wrap>, <media video>
     // mimetype="video"
     var body = xmlDoc.querySelector("body");
-    var figureElements = body.querySelectorAll("fig, table-wrap, supplementary-material, media[mimetype=video], media[mimetype=audio]");
+    var figureElements = body.querySelectorAll("fig, table-wrap, supplementary-material, media[mimetype=video]");
     var nodes = [];
     for (var i = 0; i < figureElements.length; i++) {
-        var figEl = figureElements[i];
-        // skip converted elements
-        if (figEl._converted) continue;
-        var type = util.dom.getNodeType(figEl);
-        var node = null;
-        if (type === "fig") {
-            node = this.figure(state, figEl);
-        }
-        //else if (type === "table-wrap") { node = this.tableWrap(state, figEl)}
-        else if (type === "media") {
-            node = this.video(state, figEl);
-        } else if (type === "supplementary-material") {
-            node = this.supplement(state, figEl);
-        }
-        if (node) {
-            nodes.push(node);
-        }
+      var figEl = figureElements[i];
+      // skip converted elements
+      if (figEl._converted) continue;
+      var type = util.dom.getNodeType(figEl);
+      var node = null;
+      if (type === "fig") {
+        node = this.figure(state, figEl);
+      } else if (type === "table-wrap") {
+        node = this.tableWrap(state, figEl);
+      } else if (type === "media") {
+        node = this.video(state, figEl);
+      } else if (type === "supplementary-material") {
+        node = this.supplement(state, figEl);
+      }
+      if (node) {
+        nodes.push(node);
+      }
     }
     this.show(state, nodes);
   };
 
-  this.extractCitations = function (state, xmlDoc) {
+  this.extractCitations = function(state, xmlDoc) {
     var refList = xmlDoc.querySelector("ref-list");
     if (refList) {
-        this.refList(state, refList);
+      this.refList(state, refList);
     }
   };
   this.extractFootnotes = function (state, xmlDoc) {
@@ -1097,25 +1094,25 @@ NlmToLensConverter.Prototype = function() {
   };
 
   // articleIds: array of <article-id> elements
-  this.articleIds = function (state, articleIds) {
+  this.articleIds = function(state, articleIds) {
     var doc = state.doc;
 
     // Note: Substance.Article does only support one id
     if (articleIds.length > 0) {
-        doc.id = articleIds[0].textContent;
+      doc.id = articleIds[0].textContent;
     } else {
-        // if no id was set we create a random one
-        doc.id = util.uuid();
+      // if no id was set we create a random one
+      doc.id = util.uuid();
     }
   };
 
-  this.titleGroup = function (state, titleGroup) {
+  this.titleGroup = function(state, titleGroup) {
     var doc = state.doc;
     var articleTitle = titleGroup.querySelector("article-title");
     if (articleTitle) {
-        doc.title = this.annotatedText(state, articleTitle, ['document', 'title'], {
-            ignore: ['xref']
-        });
+      doc.title = this.annotatedText(state, articleTitle, ['document', 'title'], {
+        ignore: ['xref']
+      });
     }
     // Not yet supported:
     // <subtitle> Document Subtitle, zero or one
@@ -1123,43 +1120,43 @@ NlmToLensConverter.Prototype = function() {
 
   // Note: Substance.Article supports no publications directly.
   // We use the first pub-date for created_at
-  this.pubDates = function (state, pubDates) {
+  this.pubDates = function(state, pubDates) {
     var doc = state.doc;
     if (pubDates.length > 0) {
-        var converted = this.pubDate(state, pubDates[0]);
-        doc.created_at = converted.date;
+      var converted = this.pubDate(state, pubDates[0]);
+      doc.created_at = converted.date;
     }
   };
 
   // Note: this does not follow the spec but only takes the parts as it was necessary until now
   // TODO: implement it thoroughly
-  this.pubDate = function (state, pubDate) {
+  this.pubDate = function(state, pubDate) {
     var day = -1;
     var month = -1;
     var year = -1;
-    _.each(util.dom.getChildren(pubDate), function (el) {
-        var type = util.dom.getNodeType(el);
+    _.each(util.dom.getChildren(pubDate), function(el) {
+      var type = util.dom.getNodeType(el);
 
-        var value = el.textContent;
-        if (type === "day") {
-            day = parseInt(value, 10);
-        } else if (type === "month") {
-            month = parseInt(value, 10);
-        } else if (type === "year") {
-            year = parseInt(value, 10);
-        }
+      var value = el.textContent;
+      if (type === "day") {
+        day = parseInt(value, 10);
+      } else if (type === "month") {
+        month = parseInt(value, 10);
+      } else if (type === "year") {
+        year = parseInt(value, 10);
+      }
     }, this);
     var date = new Date(year, month, day);
     return {
-        date: date
+      date: date
     };
   };
 
-  this.abstracts = function (state, articleMeta) {
+  this.abstracts = function(state, articleMeta) {
     // <abstract> Abstract, zero or more
     var abstracts = articleMeta.querySelectorAll("abstract");
-    _.each(abstracts, function (abs) {
-        this.abstract(state, abs);
+    _.each(abstracts, function(abs) {
+      this.abstract(state, abs);
     }, this);
   };
   this._abstract = function (state, abs) {
@@ -1220,18 +1217,18 @@ NlmToLensConverter.Prototype = function() {
   // ### Article.Body
   //
 
-  this.body = function (state, body) {
+  this.body = function(state, body) {
     var doc = state.doc;
     var heading = {
-        id: state.nextId("heading"),
-        type: "heading",
-        level: 1,
-        content: ""
+      id: state.nextId("heading"),
+      type: "heading",
+      level: 1,
+      content: "Main Text"
     };
     doc.create(heading);
     var nodes = [heading].concat(this.bodyNodes(state, util.dom.getChildren(body)));
     if (nodes.length > 0) {
-        this.show(state, nodes);
+      this.show(state, nodes);
     }
   };
 
@@ -1247,62 +1244,62 @@ NlmToLensConverter.Prototype = function() {
   // Note: this is also used for boxed-text elements
   this._bodyNodes = {};
 
-  this.bodyNodes = function (state, children, options) {
+  this.bodyNodes = function(state, children, options) {
     var nodes = [], node;
 
     for (var i = 0; i < children.length; i++) {
-        var child = children[i];
-        var type = util.dom.getNodeType(child);
+      var child = children[i];
+      var type = util.dom.getNodeType(child);
 
-        if (this._bodyNodes[type]) {
-            var result = this._bodyNodes[type].call(this, state, child);
-            if (_.isArray(result)) {
-                nodes = nodes.concat(result);
-            } else if (result) {
-                nodes.push(result);
-            } else {
-                // skip
-            }
-        } else if (this._ignoredBodyNodes[type] || (options && options.ignore && options.ignore.indexOf(type) >= 0)) {
-            // Note: here are some node types ignored which are
-            // processed in an extra pass (figures, tables, etc.)
-            node = this.ignoredNode(state, child, type);
-            if (node) nodes.push(node);
+      if (this._bodyNodes[type]) {
+        var result = this._bodyNodes[type].call(this, state, child);
+        if (_.isArray(result)) {
+          nodes = nodes.concat(result);
+        } else if (result) {
+          nodes.push(result);
         } else {
-            console.error("Node not yet supported as top-level node: " + type);
+          // skip
         }
+      } else if (this._ignoredBodyNodes[type] || (options && options.ignore && options.ignore.indexOf(type) >= 0) ) {
+        // Note: here are some node types ignored which are
+        // processed in an extra pass (figures, tables, etc.)
+        node = this.ignoredNode(state, child, type);
+        if (node) nodes.push(node);
+      } else {
+        console.error("Node not yet supported as top-level node: " + type);
+      }
     }
     return nodes;
   };
 
-  this._bodyNodes["p"] = function (state, child) {
+  this._bodyNodes["p"] = function(state, child) {
     return this.paragraphGroup(state, child);
   };
-  this._bodyNodes["sec"] = function (state, child) {
+  this._bodyNodes["sec"] = function(state, child) {
     return this.section(state, child);
   };
-  this._bodyNodes["list"] = function (state, child) {
+  this._bodyNodes["list"] = function(state, child) {
     return this.list(state, child);
   };
-  this._bodyNodes["disp-formula"] = function (state, child) {
+  this._bodyNodes["disp-formula"] = function(state, child) {
     return this.formula(state, child);
   };
-  this._bodyNodes["caption"] = function (state, child) {
+  this._bodyNodes["caption"] = function(state, child) {
     return this.caption(state, child);
   };
-  this._bodyNodes["boxed-text"] = function (state, child) {
+  this._bodyNodes["boxed-text"] = function(state, child) {
     return this.boxedText(state, child);
   };
   this._bodyNodes["disp-quote"] = function (state, child) {
     return this.quoteText(state, child);
   };
-  this._bodyNodes["attrib"] = function (state, child) {
+  this._bodyNodes["attrib"] = function(state, child) {
     return this.paragraphGroup(state, child);
   };
-  this._bodyNodes["comment"] = function (state, child) {
+  this._bodyNodes["comment"] = function(state, child) {
     return this.comment(state, child);
   };
-  this._bodyNodes["fig"] = function (state, child) {
+  this._bodyNodes["fig"] = function(state, child) {
     return this.figure(state, child);
   };
   this._bodyNodes["speech"] = function (state, child) {
@@ -1370,25 +1367,25 @@ NlmToLensConverter.Prototype = function() {
     return secNode;
   };
   // Overwirte in specific converter
-  this.ignoredNode = function (/*state, node, type*/) {
+  this.ignoredNode = function(/*state, node, type*/) {
   };
 
-  this.comment = function (/*state, comment*/) {
+  this.comment = function(/*state, comment*/) {
     // TODO: this is not yet represented in the article data model
     return null;
   };
 
-  this.boxedText = function (state, box) {
+  this.boxedText = function(state, box) {
     var doc = state.doc;
     // Assuming that there are no nested <boxed-text> elements
     var childNodes = this.bodyNodes(state, util.dom.getChildren(box));
     var boxId = state.nextId("box");
     var boxNode = {
-        "type": "box",
-        "id": boxId,
-        "source_id": box.getAttribute("id"),
-        "label": "",
-        "children": _.pluck(childNodes, 'id')
+      "type": "box",
+      "id": boxId,
+      "source_id": box.getAttribute("id"),
+      "label": "",
+      "children": _.pluck(childNodes, 'id')
     };
     doc.create(boxNode);
     return boxNode;
@@ -1455,93 +1452,97 @@ NlmToLensConverter.Prototype = function() {
   this.datasets = function (state, datasets) {
     var nodes = [];
 
-    for (var i = 0; i < datasets.length; i++) {
-        var data = datasets[i];
-        var type = util.dom.getNodeType(data);
-        if (type === 'p') {
-            var obj = data.querySelector('related-object');
-            if (obj) {
-                nodes = nodes.concat(this.indivdata(state, obj));
-            }
-            else {
-                var par = this.paragraphGroup(state, data);
-                if (par.length > 0) nodes.push(par[0].id);
-            }
+    for (var i=0;i<datasets.length;i++) {
+      var data = datasets[i];
+      var type = util.dom.getNodeType(data);
+      if (type === 'p') {
+        var obj = data.querySelector('related-object');
+        if (obj) {
+          nodes = nodes.concat(this.indivdata(state,obj));
         }
+        else {
+          var par = this.paragraphGroup(state, data);
+          if (par.length > 0) nodes.push(par[0].id);
+        }
+      }
     }
     return nodes;
   };
 
-  this.indivdata = function (state, indivdata) {
+  this.indivdata = function(state,indivdata) {
     var doc = state.doc;
+
     var p1 = {
-        "type": "paragraph",
-        "id": state.nextId("paragraph"),
-        "children": []
+      "type" : "paragraph",
+      "id" : state.nextId("paragraph"),
+      "children" : []
     };
     var text1 = {
-        "type": "text",
-        "id": state.nextId("text"),
-        "content": ""
+      "type" : "text",
+      "id" : state.nextId("text"),
+      "content" : ""
     };
     p1.children.push(text1.id);
     var input = util.dom.getChildren(indivdata);
-    for (var i = 0; i < input.length; i++) {
-        var info = input[i];
-        var type = util.dom.getNodeType(info);
-        var par;
-        if (type === "name") {
-            var children = util.dom.getChildren(info);
-            for (var j = 0; j < children.length; j++) {
-                var name = children[j];
-                if (j === 0) {
-                    par = this.paragraphGroup(state, name);
-                    p1.children.push(par[0].children[0]);
-                }
-                else {
-                    var text2 = {
-                        "type": "text",
-                        "id": state.nextId("text"),
-                        "content": ", "
-                    };
-                    doc.create(text2);
-                    p1.children.push(text2.id);
-                    par = this.paragraphGroup(state, name);
-                    p1.children.push(par[0].children[0]);
-                }
-            }
+    for (var i = 0;i<input.length;i++) {
+      var info = input[i];
+      var type = util.dom.getNodeType(info);
+      var par;
+      if (type === "name") {
+        var children = util.dom.getChildren(info);
+        for (var j = 0;j<children.length;j++) {
+          var name = children[j];
+          if (j === 0) {
+            par = this.paragraphGroup(state,name);
+            p1.children.push(par[0].children[0]);
+          }
+          else {
+            var text2 = {
+              "type" : "text",
+              "id" : state.nextId("text"),
+              "content" : ", "
+            };
+            doc.create(text2);
+            p1.children.push(text2.id);
+            par = this.paragraphGroup(state,name);
+            p1.children.push(par[0].children[0]);
+          }
         }
-        else {
-            par = this.paragraphGroup(state, info);
-            // Smarter null reference check?
-            if (par && par[0] && par[0].children) {
-                p1.children.push(par[0].children[0]);
-            }
+      }
+      else {
+        par = this.paragraphGroup(state,info);
+        // Smarter null reference check?
+        if (par && par[0] && par[0].children) {
+          p1.children.push(par[0].children[0]);
         }
+      }
     }
     doc.create(p1);
     doc.create(text1);
     return p1.id;
   };
-  this.section = function (state, section) {
+
+  this.section = function(state, section) {
     // pushing the section level to track the level for nested sections
     state.sectionLevel++;
+
     var doc = state.doc;
     var children = util.dom.getChildren(section);
     var nodes = [];
+
     // Optional heading label
     var label = this.selectDirectChildren(section, "label")[0];
+
     // create a heading
     var title = this.selectDirectChildren(section, 'title')[0];
-
     if (!title) {
-        console.error("FIXME: every section should have a title", this.toHtml(section));
-
+      console.error("FIXME: every section should have a title", this.toHtml(section));
     }
     // Recursive Descent: get all section body nodes
     nodes = nodes.concat(this.bodyNodes(state, children, {
         ignore: ["title", "label", "sec-meta"]
     }));
+
     if (nodes.length > 0 && title) {
         var id = state.nextId("heading");
         var heading = {
@@ -1569,21 +1570,23 @@ NlmToLensConverter.Prototype = function() {
             }
         }
 
-        if (label) {
-            heading.label = label.textContent;
-        }
-        if (heading.content.length > 0) {
-            doc.create(heading);
-            nodes.unshift(heading);
-        }
+      if (label) {
+        heading.label = label.textContent;
+      }
+
+      if (heading.content.length > 0) {
+        doc.create(heading);
+        nodes.unshift(heading);
+      }
     } else if (nodes.length === 0) {
-        console.info("NOTE: skipping section without content:", title ? title.innerHTML : "no title");
+      console.info("NOTE: skipping section without content:", title ? title.innerHTML : "no title");
     }
 
     // popping the section level
     state.sectionLevel--;
     return nodes;
   };
+
   this.ignoredParagraphElements = {
     "comment": true,
     "supplementary-material": true,
@@ -1591,6 +1594,7 @@ NlmToLensConverter.Prototype = function() {
     "fig-group": true,
     "media": true,
   };
+
   this.acceptedParagraphElements = {
     "boxed-text": {handler: "boxedText"},
     "disp-quote": {handler: "quoteText"},
@@ -1599,55 +1603,60 @@ NlmToLensConverter.Prototype = function() {
     "speech": {handler: "speechText"},
     "table-wrap": {handler: "tableWrap"}
   };
+
   this.inlineParagraphElements = {
     "inline-graphic": true,
-    "inline-formula": true,
+    "inline-formula": true
   };
+
   // Segments children elements of a NLM <p> element
   // into blocks grouping according to following rules:
   // - "text", "inline-graphic", "inline-formula", and annotations
   // - ignore comments, supplementary-materials
   // - others are treated as singles
-  this.segmentParagraphElements = function (paragraph) {
+  this.segmentParagraphElements = function(paragraph) {
     var blocks = [];
     var lastType = "";
-    //TODO td as element
-    //paragraph = document.createElement('td');
-    //paragraph.innerHTML='-';
     var iterator = new util.dom.ChildNodeIterator(paragraph);
+
     // first fragment the childNodes into blocks
     while (iterator.hasNext()) {
-        var child = iterator.next();
-        var type = util.dom.getNodeType(child);
-        // ignore some elements
-        if (this.ignoredParagraphElements[type]) continue;
-        // paragraph elements
-        if (type === "text" || this.isAnnotation(type) || this.inlineParagraphElements[type]) {
-            if (lastType !== "paragraph") {
-                blocks.push({handler: "paragraph", nodes: []});
-                lastType = "paragraph";
-            }
-            _.last(blocks).nodes.push(child);
-            continue;
+      var child = iterator.next();
+      var type = util.dom.getNodeType(child);
+
+      // ignore some elements
+      if (this.ignoredParagraphElements[type]) continue;
+
+      // paragraph elements
+      if (type === "text" || this.isAnnotation(type) || this.inlineParagraphElements[type]) {
+        if (lastType !== "paragraph") {
+          blocks.push({ handler: "paragraph", nodes: [] });
+          lastType = "paragraph";
         }
-        // other elements are treated as single blocks
-        else if (this.acceptedParagraphElements[type]) {
-            blocks.push(_.extend({node: child}, this.acceptedParagraphElements[type]));
-        }
-        lastType = type;
+        _.last(blocks).nodes.push(child);
+        continue;
+      }
+      // other elements are treated as single blocks
+      else if (this.acceptedParagraphElements[type]) {
+        blocks.push(_.extend({node: child}, this.acceptedParagraphElements[type]));
+      }
+      lastType = type;
     }
     return blocks;
   };
 
+
   // A 'paragraph' is given a '<p>' tag
   // An NLM <p> can contain nested elements that are represented flattened in a Substance.Article
   // Hence, this function returns an array of nodes
-  this.paragraphGroup = function (state, paragraph) {
+  this.paragraphGroup = function(state, paragraph) {
     var nodes = [];
+
     // Note: there are some elements in the NLM paragraph allowed
     // which are flattened here. To simplify further processing we
     // segment the children of the paragraph elements in blocks
     var blocks = this.segmentParagraphElements(paragraph);
+
     for (var i = 0; i < blocks.length; i++) {
         var block = blocks[i];
 
@@ -1664,14 +1673,17 @@ NlmToLensConverter.Prototype = function() {
         }
         if (node) nodes.push(node);
     }
+
     return nodes;
   };
-  this.paragraph = function (state, children) {
+
+  this.paragraph = function(state, children) {
     var doc = state.doc;
+
     // Reset whitespace handling at the beginning of a paragraph.
     // I.e., whitespaces at the beginning will be removed rigorously.
     state.skipWS = true;
-    //console.log("converter paragraph children --->", children);
+
     var node = {
         id: state.nextId("paragraph"),
         type: "paragraph",
@@ -1727,8 +1739,8 @@ NlmToLensConverter.Prototype = function() {
             }
         }
         else if (type === "table-wrap") {
-            console.log(this.tableWrap(state, child))
-            console.log("converter paragraph child  type handle ------->", child);
+            this.tableWrap(state, child);
+
         }
 
     }
