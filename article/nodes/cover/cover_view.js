@@ -14,7 +14,6 @@ var CoverView = function(node, viewFactory) {
 
 CoverView.Prototype = function() {
 
-
   // Render it
   // --------
   //
@@ -32,9 +31,6 @@ CoverView.Prototype = function() {
     var pubInfo = this.node.document.get('publication_info');
 
 
-    // Render Subject(s) if available
-    // --------------
-    //
 
     if (pubInfo) {
       var subjects = pubInfo.subjects;
@@ -151,7 +147,7 @@ CoverView.Prototype = function() {
     }
 
 
-      return this;
+    return this;
   };
 };
 

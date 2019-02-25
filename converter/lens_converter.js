@@ -959,6 +959,9 @@ NlmToLensConverter.Prototype = function() {
     // Same for the citations, also globally
     this.extractCitations(state, article);
 
+    // Extract footnotes
+    this.extractFootnotes(state, article);
+
     // Make up a cover node
     this.extractCover(state, article);
 
@@ -1066,7 +1069,7 @@ NlmToLensConverter.Prototype = function() {
       if (type === "fig") {
         node = this.figure(state, figEl);
       } else if (type === "table-wrap") {
-        node = this.tableWrap(state, figEl);
+        //node = this.tableWrap(state, figEl);
       } else if (type === "media") {
         node = this.video(state, figEl);
       } else if (type === "supplementary-material") {
@@ -1223,7 +1226,7 @@ NlmToLensConverter.Prototype = function() {
       id: state.nextId("heading"),
       type: "heading",
       level: 1,
-      content: "Main Text"
+      content: ""
     };
     doc.create(heading);
     var nodes = [heading].concat(this.bodyNodes(state, util.dom.getChildren(body)));
@@ -2062,9 +2065,11 @@ NlmToLensConverter.Prototype = function() {
     // Note: using a DOM div element to create HTML
     this.extractTableCaption(state, tableNode, tableWrap);
 
-    this.enhanceTable(state, tableNode, tableWrap);
+
+    //this.enhanceTable(state, tableNode, tableWrap);
     doc.create(tableNode);
     return tableNode;
+
   };
 
   this.extractTableCaption = function(state, tableNode, tableWrap) {
@@ -2211,7 +2216,7 @@ NlmToLensConverter.Prototype = function() {
     footnoteNode.text = blocks;
     doc.create(footnoteNode);
     doc.show("footnotes", id);
-    return footnoteNode;
+       return footnoteNode;
   };
 // Citations
 // ---------
@@ -2637,26 +2642,9 @@ NlmToLensConverter.Prototype = function() {
     // xlink:href example: elife00778v001.mov
 
     var url = element.getAttribute("xlink:href");
-    var name;
-    // Just return absolute urls
-    if (url.match(/http:/)) {
-      var lastdotIdx = url.lastIndexOf(".");
-      name = url.substring(0, lastdotIdx);
-      node.url = name+".mp4";
-      node.url_ogv = name+".ogv";
-      node.url_webm = name+".webm";
-      node.poster = name+".png";
-      return;
-    } else {
-        /*
-         var baseURL = this.getBaseURL(state);
-         name = url.split(".")[0];
-         node.url = baseURL + name + ".mp4";
-         node.url_ogv = baseURL + name + ".ogv";
-         node.url_webm = baseURL + name + ".webm";
-         node.poster = baseURL + name + ".png";
-         */
-    }
+    node.url =url;
+    //node.poster = name+".png";
+
   };
 
   // Default figure url resolver

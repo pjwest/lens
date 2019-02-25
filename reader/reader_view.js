@@ -418,11 +418,12 @@ ReaderView.Prototype = function () {
 
     this.onToggleResourceReference = function (panel, id, element) {
         if (element.classList.contains('highlighted')) {
-            this.readerCtrl.modifyState({
+            //double click disabled
+            /*this.readerCtrl.modifyState({
                 panel: this.lastPanel,
-                focussedNode: null,
+                focussedNode: id,
                 fullscreen: false
-            });
+            });*/
         } else {
             // FIXME: ATM the state always assumes 'content' as the containing panel
             // Instead, we also let the panel catch the event and then delegate to ReaderView providing the context as done with onToggleResource

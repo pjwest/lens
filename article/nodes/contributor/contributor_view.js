@@ -57,6 +57,7 @@ ContributorView.Prototype = function() {
     }));
 
 
+
     // Present Address
     // -------
 
@@ -88,7 +89,6 @@ ContributorView.Prototype = function() {
     // Equal contribution
     // -------
 
-
     if (this.node.equal_contrib && this.node.equal_contrib.length > 0) {
       this.content.appendChild(
         $$('.equal-contribution.contrib-data', {
@@ -119,6 +119,7 @@ ContributorView.Prototype = function() {
       );
     }
 
+
     // Funding
     // -------
 
@@ -134,6 +135,7 @@ ContributorView.Prototype = function() {
         })
       );
     }
+
 
     // Competing interests
     // -------
@@ -185,6 +187,7 @@ ContributorView.Prototype = function() {
       );
     }
 
+
     // Contributor Bio
     // -------
 
@@ -205,6 +208,7 @@ ContributorView.Prototype = function() {
     // -------
 
     if (this.node.deceased) {
+      // this.content.appendChild($$('.label', {text: 'Present address'}));
       this.content.appendChild($$('.label', {text: "* Deceased"}));
     }
 
