@@ -319,38 +319,41 @@ NlmToLensConverter.Prototype = function() {
       if (reviewer) {
         var content = [];
 
-        var reviewerTitle = "Reviewing Author";
+        var reviewerTitle = "";
         if (reviewer.getAttribute("contrib-type") == "editor") {
           reviewerTitle = "Reviewing Editor";
+        } else if (reviewer.getAttribute("contrib-type") == "author") {
+          reviewerTitle = "Reviewing Author";
         }
         ;
+        if (reviewerTitle.length > 0) {
+          var name = this.getName(reviewer.querySelector('name'));
+          if (name) content.push(name);
+          var inst = reviewer.querySelector("institution");
+          if (inst) content.push(inst.textContent);
+          var country = reviewer.querySelector("country");
+          if (country) content.push(country.textContent);
 
-        var name = this.getName(reviewer.querySelector('name'));
-        if (name) content.push(name);
-        var inst = reviewer.querySelector("institution");
-        if (inst) content.push(inst.textContent);
-        var country = reviewer.querySelector("country");
-        if (country) content.push(country.textContent);
 
+          var h1 = {
+            "type": "heading",
+            "id": state.nextId("heading"),
+            "level": 3,
+            "content": reviewerTitle
+          };
 
-        var h1 = {
-          "type": "heading",
-          "id": state.nextId("heading"),
-          "level": 3,
-          "content": reviewerTitle
-        };
+          doc.create(h1);
+          nodes.push(h1.id);
 
-        doc.create(h1);
-        nodes.push(h1.id);
+          var t1 = {
+            "type": "text",
+            "id": state.nextId("text"),
+            "content": content.join(", ")
+          };
 
-        var t1 = {
-          "type": "text",
-          "id": state.nextId("text"),
-          "content": content.join(", ")
-        };
-
-        doc.create(t1);
-        nodes.push(t1.id);
+          doc.create(t1);
+          nodes.push(t1.id);
+        }
       }
     }
     return nodes;
