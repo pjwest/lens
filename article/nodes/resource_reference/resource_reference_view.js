@@ -11,6 +11,7 @@ ResourceReferenceView.Prototype = function() {
   this.createElement = function() {
     var el = document.createElement('a');
     el.setAttribute('href', '');
+
     return el;
   };
 };

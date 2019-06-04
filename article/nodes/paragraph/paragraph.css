@@ -221,6 +221,12 @@
   line-height: 28px !important;
 }
 
+.content-node.paragraph.rtl {
+  float: right;
+  display: block !important;
+  margin-left: 0px;
+}
+
 /*** Abstand zw. zwei aufeinanderfolgenden Paragrafen im Fließtext sowie Unterdrückung dieses Abstands für <p> innerhalb von Tabellen und Zitaten 7.12.18 voe***/
 .content-node.paragraph + .content-node.paragraph {
       margin-top: 0.7em;

@@ -45,12 +45,11 @@ NlmToLensConverter.Prototype = function() {
   this._contribTypeMapping = {
     "author": "Author",
     "author non-byline": "Author",
-    "autahor": "Author",
     "auther": "Author",
+    "collab": "Collaborator",
     "editor": "Editor",
     "guest-editor": "Guest Editor",
     "group-author": "Group Author",
-    "collab": "Collaborator",
     "reviewed-by": "Reviewer",
     "nominated-by": "Nominator",
     "corresp": "Corresponding Author",
@@ -70,7 +69,8 @@ NlmToLensConverter.Prototype = function() {
     "participant": "Participant",
     "translator": "Translator",
     "section-editor": "Section Editor",
-    "section-author": "Section Author"
+    "section-author": "Section Author",
+    "chapter-author": "Chapter Author"
   };
 
   this.isAnnotation = function(type) {
@@ -544,16 +544,35 @@ NlmToLensConverter.Prototype = function() {
       abstract:  (abstract !== undefined) ?  abstract.id : ''
     };
 
-    // Create authors paragraph that has contributor_reference annotations
     // to activate the author cards
+    var displayRole = false;
+
+    _.each(docNode.authors, function(contributorId) {
+      var contributor = doc.get(contributorId);
+      if (contributor.contributor_type.toLowerCase() === 'Translator'.toLowerCase()) {
+        displayRole = true;
+        //break;
+
+      }
+
+    }, this);
+
+
+
+    // Create authors paragraph that has contributor_reference annotations
 
     _.each(docNode.authors, function(contributorId) {
       var contributor = doc.get(contributorId);
 
+      var contributor_name =  contributor.name ;
+      if (displayRole === true) {
+         contributor_name += "(" + contributor.contributor_type + ")";
+      }
+
       var authorsPara = {
         "id": "text_"+contributorId+"_reference",
         "type": "text",
-        "content": contributor.name
+        "content": contributor_name
       };
 
       doc.create(authorsPara);
@@ -563,7 +582,7 @@ NlmToLensConverter.Prototype = function() {
         id: state.nextId("contributor_reference"),
         type: "contributor_reference",
         path: ["text_" + contributorId + "_reference", "content"],
-        range: [0, contributor.name.length],
+        range: [0, contributor_name.length],
         target: contributorId
       };
 
@@ -739,11 +758,18 @@ NlmToLensConverter.Prototype = function() {
     if (contrib.getAttribute("contrib-type") === "editor") {
         doc.nodes.document.authors.push(id);
     }
+    if (contrib.getAttribute("contrib-type") === "translator") {
+      doc.nodes.document.authors.push(id);
+    }
     if (contrib.getAttribute("contrib-type") === "section-editor") {
         doc.nodes.document.authors.push(id);
     }
     if (contrib.getAttribute("contrib-type") === "section-author") {
         doc.nodes.document.authors.push(id);
+    }
+
+    if (contrib.getAttribute("contrib-type") === "chapter-author") {
+          doc.nodes.document.authors.push(id);
     }
     doc.create(contribNode);
     doc.show("info", contribNode.id);
@@ -1212,8 +1238,11 @@ NlmToLensConverter.Prototype = function() {
         var node = this.paragraph(state, p);
         if (node) children.push(node.id);
     }, this);
-    abstractNode.children = children;
-    doc.create(abstractNode);
+    if (paragraphs.length > 0)
+    {
+      abstractNode.children = children;
+      doc.create(abstractNode);
+    }
     return abstractNode;
 
   };
@@ -1269,7 +1298,7 @@ NlmToLensConverter.Prototype = function() {
         node = this.ignoredNode(state, child, type);
         if (node) nodes.push(node);
       } else {
-        console.error("Node not yet supported as top-level node: " + type);
+        console.warn("Node not yet supported as top-level node: " + type);
       }
     }
     return nodes;
@@ -1332,22 +1361,40 @@ NlmToLensConverter.Prototype = function() {
         "authors": [],
         "abstract": []
     };
-    var section_contributors = ["Section Editor", "Section Author"];
+    var section_contributors = ["Section Editor", "Section Author","Translator", "Chapter Author"];
     var i;
+
+    var displayRole = false;
+
+    _.each(docNode.authors, function(contributorId) {
+      var contributor = doc.get(contributorId);
+      if (contributor.contributor_type.toLowerCase() === 'Translator'.toLowerCase()) {
+        displayRole = true;
+        //break;
+
+      }
+
+    }, this);
+
+
     _.each(docNode.authors, function (contributorId) {
         var contributor = doc.get(contributorId);
+      var contributor_name =  contributor.name ;
+      if (displayRole === true) {
+        contributor_name += " (" + contributor.contributor_type + ")";
+      }
         for (i = 0; i < section_contributors.length; i++) {
             if (contributor.contributor_type === section_contributors[i]) {
                 var authorsPara = {
                     "id": "text_" + contributorId + "_reference",
                     "type": "text",
-                    "content": contributor.name
+                    "content": contributor_name
                 };
                 var anno = {
                     id: state.nextId("contributor_reference"),
                     type: "contributor_reference",
                     path: ["text_" + contributorId + "_reference", "content"],
-                    range: [0, contributor.name.length],
+                    range: [0, contributor_name.length],
                     target: contributorId
                 };
 
@@ -1539,7 +1586,7 @@ NlmToLensConverter.Prototype = function() {
     // create a heading
     var title = this.selectDirectChildren(section, 'title')[0];
     if (!title) {
-      console.error("FIXME: every section should have a title", this.toHtml(section));
+      console.warn("FIXME: every section should have a title", this.toHtml(section));
     }
     // Recursive Descent: get all section body nodes
     nodes = nodes.concat(this.bodyNodes(state, children, {
@@ -1665,9 +1712,11 @@ NlmToLensConverter.Prototype = function() {
 
       var node;
       if (block.handler === "paragraph") {
+
         node = this.paragraph(state, block.nodes);
         if (node) {node.source_id = paragraph.getAttribute("id");
             node.attributes = paragraph.attributes;
+
         }
 
       } else {
@@ -1675,7 +1724,6 @@ NlmToLensConverter.Prototype = function() {
       }
       if (node) nodes.push(node);
     }
-
     return nodes;
   };
 
@@ -2079,7 +2127,7 @@ NlmToLensConverter.Prototype = function() {
       var captionNode = this.caption(state, caption);
       if (captionNode) tableNode.caption = captionNode.id;
     } else {
-      console.error('caption node not found for', tableWrap);
+      console.warn('caption node not found for', tableWrap);
     }
   };
 
@@ -2121,7 +2169,7 @@ NlmToLensConverter.Prototype = function() {
           // Skipping - is handled in this.formula()
           break;
         default:
-          console.error('Unsupported formula element of type ' + type);
+          console.warn('Unsupported formula element of type ' + type);
       }
     }
     return result;
@@ -2175,6 +2223,7 @@ NlmToLensConverter.Prototype = function() {
     for (m = 0; m < footnote.length; m++) {
         var n = footnote[m];
         blocks.push(this.segmentParagraphElements(n));
+        //blocks.push(this.paragraph(state,n));
 
     }
 
@@ -2202,7 +2251,6 @@ NlmToLensConverter.Prototype = function() {
                     for (k = 0; k < b.length; k++) {
                         if (b[k].tagName == 'xref') {
                             var sourceId = b[k].getAttribute("rid");
-                            console.log(state.doc);
                             var targetNode = state.doc.getNodeBySourceId(sourceId);
                             if (targetNode !== undefined) {
                                 b[k].target = targetNode.properties.id;
@@ -2216,7 +2264,7 @@ NlmToLensConverter.Prototype = function() {
     footnoteNode.text = blocks;
     doc.create(footnoteNode);
     doc.show("footnotes", id);
-       return footnoteNode;
+    return footnoteNode;
   };
 // Citations
 // ---------
@@ -2244,7 +2292,7 @@ NlmToLensConverter.Prototype = function() {
         // skip the label here...
         // TODO: could we do something useful with it?
       } else {
-        console.error("Not supported in 'ref': ", type);
+        console.warn("Not supported in 'ref': ", type);
       }
     }
   };
@@ -2335,7 +2383,7 @@ NlmToLensConverter.Prototype = function() {
           if (source) {
             citationNode.title = this.annotatedText(state, source, [id, 'title']);
           } else {
-            console.error("FIXME: this citation has no title", citation);
+            console.warn("FIXME: this citation has no title", citation);
           }
         }
       }
@@ -2524,7 +2572,7 @@ NlmToLensConverter.Prototype = function() {
           }
         } else {
           if (nested) {
-            console.error("Node not yet supported in annoted text: " + type);
+            console.warn("Node not yet supported in annoted text: " + type);
           }
           else {
             // on paragraph level other elements can break a text block

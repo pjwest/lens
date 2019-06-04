@@ -10,7 +10,7 @@ var util = require("../../../substance/util");
 
 // Lens.Citation.View
 
-var CitationView = function (node, viewFactory, options) {
+var FootnoteView = function (node, viewFactory, options) {
     NodeView.apply(this, arguments);
 
     // Mix-in
@@ -20,7 +20,7 @@ var CitationView = function (node, viewFactory, options) {
 };
 
 
-CitationView.Prototype = function () {
+FootnoteView.Prototype = function () {
 
     // Mix-in
     _.extend(this, ResourceView.prototype);
@@ -52,6 +52,7 @@ CitationView.Prototype = function () {
 
                 if (part !== undefined) {
                     div = document.createElement("div");
+
                     if (part.handler === 'paragraph') {
                         part = part.nodes;
                         for (k = 0; k < part.length; k++) {
@@ -203,8 +204,8 @@ CitationView.Prototype = function () {
     };
 };
 
-CitationView.Prototype.prototype = NodeView.prototype;
-CitationView.prototype = new CitationView.Prototype();
-CitationView.prototype.constructor = CitationView;
+FootnoteView.Prototype.prototype = NodeView.prototype;
+FootnoteView.prototype = new FootnoteView.Prototype();
+FootnoteView.prototype.constructor = FootnoteView;
 
-module.exports = CitationView;
+module.exports = FootnoteView;

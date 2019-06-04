@@ -6,19 +6,18 @@
   "_phantomChildren": {},
   "_requested": {
     "type": "git",
-    "raw": "lens@github:withanage/lens",
-    "name": "lens",
-    "escapedName": "lens",
+    "raw": "github:withanage/lens",
     "rawSpec": "github:withanage/lens",
     "saveSpec": "github:withanage/lens",
     "fetchSpec": null,
     "gitCommittish": null
   },
   "_requiredBy": [
+    "#USER",
     "/"
   ],
-  "_resolved": "github:withanage/lens#b14dbbf1083b87b8332f5ddb10e97b38e8f673ca",
-  "_spec": "lens@github:withanage/lens",
+  "_resolved": "github:withanage/lens#32fdd8451d4fc910862cacc69826685bf0cd3581",
+  "_spec": "github:withanage/lens",
   "_where": "/home/wit/projects/UBHD-Lens",
   "author": {
     "name": "Michael Aufreiter"
@@ -58,6 +57,9 @@
   },
   "deprecated": false,
   "description": "A novel way of seeing content.",
+  "devDependencies": {
+    "gulp": "^3.9.1"
+  },
   "engines": {
     "node": ">=0.8.x",
     "npm": ">=1.1.x"
@@ -76,8 +78,5 @@
     "url": "git+https://github.com/elifesciences/lens.git"
   },
   "url": "https://github.com/elifesciences/lens",
-  "version": "2.1.0",
-  "devDependencies": {
-    "gulp": "^3.9.1"
-  }
+  "version": "2.1.0"
 }

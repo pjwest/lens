@@ -11,7 +11,7 @@ var ResourceView = require('../../resource_view');
 var FigureView = function(node, viewFactory, options) {
   CompositeView.call(this, node, viewFactory);
 
-  
+
   // Mix-in
   ResourceView.call(this, options);
 };

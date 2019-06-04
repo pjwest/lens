@@ -18,7 +18,7 @@ Footnote.type = {
   "parent": "content",
   "properties": {
     "source_id": "string",
-    "text": "object",
+    "text": ["array","paragraph"],
     "label": "string",
     "authors": ["array", "string"],
     "doi": "string",
