@@ -58,7 +58,12 @@
   "deprecated": false,
   "description": "A novel way of seeing content.",
   "devDependencies": {
-    "gulp": "^3.9.1"
+    "browserify": "^17.0.0",
+    "cookie-parser": "^1.4.5",
+    "express": "^4.17.1",
+    "gulp": "^3.9.1",
+    "method-override": "^3.0.0",
+    "node-sass": "^6.0.1"
   },
   "engines": {
     "node": ">=0.8.x",
