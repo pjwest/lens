@@ -2340,7 +2340,7 @@ NlmToLensConverter.Prototype = function() {
     // HACK: we try to create a 'articleCitation' when there is structured
     // content (ATM, when personGroup is present)
     // Otherwise we create a mixed-citation taking the plain text content of the element
-    if (personGroup) {
+    if (personGroup || true) {
 
       citationNode = {
         "id": id,
@@ -2357,15 +2357,17 @@ NlmToLensConverter.Prototype = function() {
         "citation_urls": []
       };
 
-      var nameElements = personGroup.querySelectorAll("name");
-      for (i = 0; i < nameElements.length; i++) {
-        citationNode.authors.push(this.getName(nameElements[i]));
-      }
+      if (personGroup) {
+        var nameElements = personGroup.querySelectorAll("name");
+        for (i = 0; i < nameElements.length; i++) {
+          citationNode.authors.push(this.getName(nameElements[i]));
+        }
 
-      // Consider collab elements (treat them as authors)
-      var collabElements = personGroup.querySelectorAll("collab");
-      for (i = 0; i < collabElements.length; i++) {
-        citationNode.authors.push(collabElements[i].textContent);
+        // Consider collab elements (treat them as authors)
+        var collabElements = personGroup.querySelectorAll("collab");
+        for (i = 0; i < collabElements.length; i++) {
+          citationNode.authors.push(collabElements[i].textContent);
+        }
       }
 
       var source = citation.querySelector("source");
