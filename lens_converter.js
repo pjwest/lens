@@ -1137,7 +1137,7 @@ NlmToLensConverter.Prototype = function() {
 
   this.titleGroup = function(state, titleGroup) {
     var doc = state.doc;
-    var articleTitle = titleGroup.querySelector("article-title, p");
+    var articleTitle = titleGroup.querySelector("article-title");
     if (articleTitle) {
       doc.title = this.annotatedText(state, articleTitle, ['document', 'title'], {
         ignore: ['xref']
@@ -2374,7 +2374,7 @@ NlmToLensConverter.Prototype = function() {
       var source = citation.querySelector("source");
       if (source) citationNode.source = source.textContent;
 
-      var articleTitle = citation.querySelector("article-title");
+      var articleTitle = citation.querySelector("article-title, p");
       if (articleTitle) {
         citationNode.title = this.annotatedText(state, articleTitle, [id, 'title']);
       } else {
