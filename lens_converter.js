@@ -1137,7 +1137,7 @@ NlmToLensConverter.Prototype = function() {
 
   this.titleGroup = function(state, titleGroup) {
     var doc = state.doc;
-    var articleTitle = titleGroup.querySelector("article-title");
+    var articleTitle = titleGroup.querySelector("article-title, p");
     if (articleTitle) {
       doc.title = this.annotatedText(state, articleTitle, ['document', 'title'], {
         ignore: ['xref']
