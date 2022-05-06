@@ -2062,7 +2062,8 @@ NlmToLensConverter.Prototype = function() {
   this.tableWrap = function(state, tableWrap) {
     var doc = state.doc;
     var label = tableWrap.querySelector("label");
-    var table = tableWrap.querySelector("table");
+    var table = tableWrap.querySelector("tbody") || tableWrap.querySelector("table");
+
     var content = {};
     var trs = {};
     var tds = {};
