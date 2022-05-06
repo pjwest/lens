@@ -2104,7 +2104,7 @@ NlmToLensConverter.Prototype = function() {
         "source_id": tableWrap.getAttribute("id"),
         "type": "table",
         "title": "",
-        "label": label ? label.textContent : "Table",
+        "label": label ? label.textContent : "",
         "children": content,
         "table_attributes": table.attributes,
         "caption": null,
@@ -2232,7 +2232,7 @@ NlmToLensConverter.Prototype = function() {
         "id": id,
         "source_id": fn.getAttribute("id"),
         "type": "footnote",
-        "text": "N/A",
+        "text": "",
         "label": "",
         "authors": [],
         "doi": "",
@@ -2347,7 +2347,7 @@ NlmToLensConverter.Prototype = function() {
         "id": id,
         "source_id": ref.getAttribute("id"),
         "type": "citation",
-        "title": "N/A",
+        "title": "",
         "label": "",
         "authors": [],
         "doi": "",
@@ -2374,7 +2374,7 @@ NlmToLensConverter.Prototype = function() {
       var source = citation.querySelector("source");
       if (source) citationNode.source = source.textContent;
 
-      var articleTitle = citation.querySelector("article-title,p");
+      var articleTitle = citation.querySelector("article-title");
       if (articleTitle) {
         citationNode.title = this.annotatedText(state, articleTitle, [id, 'title']);
       } else {
@@ -2386,7 +2386,12 @@ NlmToLensConverter.Prototype = function() {
           if (source) {
             citationNode.title = this.annotatedText(state, source, [id, 'title']);
           } else {
-            console.warn("FIXME: this citation has no title", citation);
+            var mixedCitation = citation.querySelector("p");
+            if (mixedCitation) {
+              citationNode.source = mixedCitation.textContent;
+            } else {
+              console.warn("FIXME: this citation has no title", citation);
+            }
           }
         }
       }
