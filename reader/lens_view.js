@@ -89,20 +89,20 @@ LensView.Prototype = function() {
   //
 
   this.replaceMainView = function(name, view) {
-    $('body').removeClass().addClass('current-view '+name);
 
-console.log("reader/lens_view.js replaceMainView called modifying body");
     if (this.mainView && this.mainView !== view) {
       this.mainView.dispose();
     }
 
     this.mainView = view;
-    if (this.$('#lens_viewer_div') {
+    if (this.$('#lens_viewer_div')) {
 console.log("reader/lens_view.js replaceMainView found lens_viewer_div");
       this.$('#lens_viewer_div').removeClass().addClass('current-view '+name);
       this.$('#lens_viewer_div').html(view.render().el);
 
     } else {
+console.log("reader/lens_view.js replaceMainView called modifying body");
+      $('body').removeClass().addClass('current-view '+name);
       this.$('#main').html(view.render().el);
     }
   };
