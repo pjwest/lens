@@ -91,6 +91,7 @@ LensView.Prototype = function() {
   this.replaceMainView = function(name, view) {
     $('body').removeClass().addClass('current-view '+name);
 
+console.log("reader/lens_view.js replaceMainView called modifying body");
     if (this.mainView && this.mainView !== view) {
       this.mainView.dispose();
     }
