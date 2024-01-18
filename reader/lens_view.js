@@ -97,7 +97,14 @@ console.log("reader/lens_view.js replaceMainView called modifying body");
     }
 
     this.mainView = view;
-    this.$('#main').html(view.render().el);
+    if (this.$('#lens_viewer_div') {
+console.log("reader/lens_view.js replaceMainView found lens_viewer_div");
+      this.$('#lens_viewer_div').removeClass().addClass('current-view '+name);
+      this.$('#lens_viewer_div').html(view.render().el);
+
+    } else {
+      this.$('#main').html(view.render().el);
+    }
   };
 
   this.render = function() {
